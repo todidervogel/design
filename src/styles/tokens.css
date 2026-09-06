@@ -1,0 +1,58 @@
+/* ==========================================================================
+   TEIL A.1 — Farben
+   Einzige Quelle der Wahrheit. Keine Farbwerte direkt in Komponenten.
+   ========================================================================== */
+:root {
+  --bg-light: #FFFFFF;
+  --bg-light-alt: #F6F6F4;
+  --bg-dark: #0B0B0C;
+  --bg-dark-alt: #17171A;
+
+  --text-primary: #17171A;
+  --text-secondary: #6B6B72;
+  --text-tertiary: #9C9CA3;
+  --text-on-dark: #FFFFFF;
+  --text-on-dark-dim: #B4B4BC;
+
+  --accent: #E4572E;
+  --accent-hover: #C9451F;
+  --accent-soft: #FDEEE9;
+
+  --border: #E4E4E1;
+  --border-strong: #C9C9C4;
+
+  --success: #2E7D4F;
+  --warning: #B8860B;
+  --danger: #C2352B;
+  --danger-soft: #FBEBEA;
+
+  --star-filled: #E4A02E;
+  --star-empty: #D8D8D4;
+
+  /* A.3 — Abstandsraster */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* A.3 — Eckenradius */
+  --r-control: 8px;   /* Buttons, Eingabefelder */
+  --r-card: 12px;     /* Karten, Bilder */
+  --r-pill: 999px;    /* Badges, Chips */
+
+  /* A.3 — Maße */
+  --content-max: 1120px;
+  --gutter: 16px;              /* Mobil */
+  --control-h: 44px;
+
+  /* Der einzige erlaubte Schatten */
+  --shadow-float: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+@media (min-width: 640px) {
+  :root { --gutter: 24px; }
+}
