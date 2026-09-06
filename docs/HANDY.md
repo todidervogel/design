@@ -81,11 +81,22 @@ in einem ZIP, das du auf dem Handy erst entpacken müsstest.
 Falls du es lieber selbst laufen sehen willst — das gewünschte Colab-Notizbuch
 liegt im Repository:
 
-**[`tools/apk-bauen.ipynb`](../tools/apk-bauen.ipynb)** →
-direkt öffnen mit:
+**[`tools/apk-bauen.ipynb`](../tools/apk-bauen.ipynb)**
+
+So öffnest du es in Colab:
+
+1. [colab.research.google.com](https://colab.research.google.com) aufrufen.
+2. **Datei → Notebook öffnen → GitHub**.
+3. `todidervogel/design` eintragen, als Branch
+   `claude/design-spec-screens-components-omyfb5` wählen.
+4. `tools/apk-bauen.ipynb` antippen.
+
+Dieser Umweg ist nötig, weil der Zweigname Schrägstriche enthält — ein
+direkter Colab-Link darauf lässt sich nicht eindeutig auflösen. Sobald der
+Zweig in `main` gelandet ist, funktioniert auch:
 
 ```
-https://colab.research.google.com/github/todidervogel/design/blob/claude/design-spec-screens-components-omyfb5/tools/apk-bauen.ipynb
+https://colab.research.google.com/github/todidervogel/design/blob/main/tools/apk-bauen.ipynb
 ```
 
 Dann oben **Laufzeit → Alle ausführen**. Der erste Durchlauf dauert
