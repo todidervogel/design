@@ -1,0 +1,11 @@
+{
+  "appId": "de.tellerrand.design",
+  "appName": "Tellerrand",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": true
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

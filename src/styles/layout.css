@@ -74,7 +74,7 @@
 /* ==========================================================================
    Karte (C.2)
    ========================================================================== */
-.map-page { display: flex; flex-direction: column; height: calc(100dvh - 64px); }
+.map-page { display: flex; flex-direction: column; height: calc(100vh - 64px); height: calc(100dvh - 64px); }
 .map-layout { flex: 1 1 auto; display: flex; min-height: 0; position: relative; }
 .map-list { display: none; }
 @media (min-width: 1024px) {
@@ -130,7 +130,7 @@
 /* ==========================================================================
    Feed (C.6) — dunkles Interface
    ========================================================================== */
-.feed { position: relative; height: 100dvh; background: var(--bg-dark); color: var(--text-on-dark); overflow: hidden; }
+.feed { position: relative; height: 100vh; height: 100dvh; background: var(--bg-dark); color: var(--text-on-dark); overflow: hidden; }
 .feed-stage { position: absolute; inset: 0; display: grid; place-items: center; }
 .feed-video {
   position: absolute; inset: 0;
@@ -178,7 +178,7 @@
 .sheet-dark .menu-item:hover { background: #26262B; }
 
 /* Aufnehmen (E.1) */
-.capture { position: relative; height: 100dvh; background: #101014; color: #fff; overflow: hidden; }
+.capture { position: relative; height: 100vh; height: 100dvh; background: #101014; color: #fff; overflow: hidden; }
 .capture-preview { position: absolute; inset: 0; background: linear-gradient(200deg, #33333B, #131317); }
 .capture-shutter {
   width: 72px; height: 72px; border-radius: 50%; background: #fff; border: 5px solid rgba(255,255,255,.35);
@@ -195,6 +195,10 @@
   background: linear-gradient(160deg, #3A3A44, #17171A); border: 0; padding: 0; cursor: pointer;
   display: block; width: 100%; text-decoration: none;
 }
+@supports not (aspect-ratio: 9 / 16) {
+  .video-tile { height: 0; padding-bottom: 177.78%; }
+}
+
 .video-tile::before {
   content: '';
   position: absolute; inset: 0; z-index: 1;
@@ -256,7 +260,7 @@
 .kpi-value { font-size: 32px; line-height: 38px; font-weight: 600; }
 
 /* Dashboard-Rahmen (Gastro & Admin) */
-.console { display: flex; min-height: calc(100dvh - 64px); }
+.console { display: flex; min-height: calc(100vh - 64px); min-height: calc(100dvh - 64px); }
 .console-side {
   display: none; width: 240px; flex: none; border-right: 1px solid var(--border);
   background: var(--bg-light); padding: var(--sp-4) var(--sp-3); flex-direction: column;

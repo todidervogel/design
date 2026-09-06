@@ -15,6 +15,8 @@ npm run build    # statischer Export nach dist/
 npm run preview  # dist/ lokal ansehen
 ```
 
+**Auf dem Handy ansehen oder als APK bauen:** siehe [docs/HANDY.md](docs/HANDY.md).
+
 ## Design-Panel
 
 Unten rechts (auf Mobil unten links) sitzt ein kleines Werkzeug — **kein Bestandteil

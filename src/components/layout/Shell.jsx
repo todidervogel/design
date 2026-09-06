@@ -56,7 +56,7 @@ export function BarePage({ title, children, bottomNav = true, headerSuffix, mini
 export function FullscreenPage({ title, children, bottomNav = true, dark = true }) {
   useScreen(title)
   return (
-    <div style={{ background: dark ? 'var(--bg-dark)' : 'var(--bg-light)', minHeight: '100dvh' }}>
+    <div className="fullheight" style={{ background: dark ? 'var(--bg-dark)' : 'var(--bg-light)' }}>
       {children}
       {bottomNav && <BottomNav dark={dark} />}
     </div>

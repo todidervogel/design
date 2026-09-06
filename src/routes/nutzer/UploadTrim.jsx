@@ -11,7 +11,7 @@ const TOOLS = [
 export default function UploadTrim() {
   return (
     <FullscreenPage title={t('upload.trim.title')} bottomNav={false}>
-      <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', color: '#fff' }}>
+      <div className="fullheight" style={{ display: 'flex', flexDirection: 'column', color: '#fff' }}>
         {/* Videovorschau */}
         <div style={{ flex: '1 1 auto', background: 'linear-gradient(200deg, #33333B, #131317)', minHeight: 320 }} />
 
