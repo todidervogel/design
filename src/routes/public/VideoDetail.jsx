@@ -8,6 +8,7 @@ import {
 import { Page } from '../../components/layout'
 import { ReportContentDialog } from '../dialogs/ReportContentDialog'
 import { useDesignState } from '../../lib/design-state'
+import { useRequireLogin } from '../../lib/auth'
 import { places } from '../../mock/places'
 import { reviews, users, videos } from '../../mock/content'
 import { MVP_STAGE } from '../../config'
@@ -19,6 +20,7 @@ export default function VideoDetail() {
   const { isLoading } = useDesignState()
   const [reportOpen, setReportOpen] = useState(false)
   const toast = useToast()
+  const requireLogin = useRequireLogin()
 
   const video = videos.find((v) => v.id === id) ?? videos[0]
   const author = users.find((u) => u.id === video.authorId) ?? users[0]
@@ -46,7 +48,9 @@ export default function VideoDetail() {
               <p className="t-body-bold">@{author.username}</p>
               <p className="t-small c-secondary">{video.date}</p>
             </div>
-            <Button variant="secondary" size="sm">{t('videoDetail.follow')}</Button>
+            <Button variant="secondary" size="sm" onClick={requireLogin(() => toast(t('toast.saved')))}>
+              {t('videoDetail.follow')}
+            </Button>
           </div>
 
           <Card pad={0}><PlaceRow place={place} showSave={false} /></Card>
@@ -72,9 +76,9 @@ export default function VideoDetail() {
           <hr className="divider" />
 
           <div className="row-wrap">
-            <Button variant="quiet" size="sm" icon={Heart} onClick={() => toast(t('toast.saved'))}>{video.likes}</Button>
+            <Button variant="quiet" size="sm" icon={Heart} onClick={requireLogin(() => toast(t('toast.saved')))}>{video.likes}</Button>
             <Button variant="quiet" size="sm" icon={MessageCircle} disabled={MVP_STAGE < 2}>{t('videoDetail.comments')}</Button>
-            <Button variant="quiet" size="sm" icon={Bookmark} onClick={() => toast(t('toast.saved'))}>{t('place.save')}</Button>
+            <Button variant="quiet" size="sm" icon={Bookmark} onClick={requireLogin(() => toast(t('toast.saved')))}>{t('place.save')}</Button>
             <Button variant="quiet" size="sm" icon={Share2} onClick={() => toast(t('toast.linkCopied'))}>{t('common.share')}</Button>
             <Button variant="quiet" size="sm" icon={Flag} onClick={() => setReportOpen(true)}>{t('videoDetail.report')}</Button>
           </div>

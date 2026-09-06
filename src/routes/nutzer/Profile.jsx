@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { Bookmark, Camera, ClipboardList, Ellipsis, Lock, Settings, Share2 } from 'lucide-react'
+import { Bookmark, Camera, ClipboardList, Ellipsis, Lock, Settings, Share2, UserRound } from 'lucide-react'
 import {
   Avatar, Badge, Button, EmptyState, IconButton, Menu, MenuItem, PlaceRow,
   ReviewCard, ReviewCardSkeleton, Skeleton, Tabs, VideoTile, useToast,
@@ -8,6 +8,7 @@ import {
 import { Page } from '../../components/layout'
 import { ReportContentDialog } from '../dialogs/ReportContentDialog'
 import { useDesignState } from '../../lib/design-state'
+import { useRequireLogin } from '../../lib/auth'
 import { me, reviews, users, videos } from '../../mock/content'
 import { places } from '../../mock/places'
 import { t } from '../../i18n'
@@ -22,7 +23,24 @@ const TABS = [
 export function OwnProfile() {
   const [params] = useSearchParams()
   const [tab, setTab] = useState(params.get('tab') === 'saved' ? 'saved' : 'videos')
+  const { loggedIn } = useDesignState()
   const toast = useToast()
+
+  if (!loggedIn) {
+    return (
+      <Page title={t('profile.guestTitle')} footer={false}>
+        <div style={{ paddingBlock: 'var(--sp-16)' }}>
+          <EmptyState
+            icon={UserRound}
+            title={t('profile.guestTitle')}
+            text={t('profile.guestText')}
+            action={<Button variant="primary" to="/anmelden">{t('auth.gate.login')}</Button>}
+            secondaryAction={<Button variant="secondary" to="/registrieren">{t('auth.gate.register')}</Button>}
+          />
+        </div>
+      </Page>
+    )
+  }
 
   return (
     <Page title={`@${me.username}`} footer={false}>
@@ -56,6 +74,7 @@ export function PublicProfile() {
   const [follow, setFollow] = useState('follow')
   const [reportOpen, setReportOpen] = useState(false)
   const toast = useToast()
+  const requireLogin = useRequireLogin()
 
   const followLabel = { follow: t('profile.follow'), requested: t('profile.requested'), following: `${t('profile.following')} ✓` }
   const nextFollow = { follow: user.private ? 'requested' : 'following', requested: 'follow', following: 'follow' }
@@ -66,7 +85,10 @@ export function PublicProfile() {
         user={user}
         actions={
           <>
-            <Button variant={follow === 'follow' ? 'primary' : 'secondary'} onClick={() => setFollow(nextFollow[follow])}>
+            <Button
+              variant={follow === 'follow' ? 'primary' : 'secondary'}
+              onClick={requireLogin(() => setFollow(nextFollow[follow]))}
+            >
               {followLabel[follow]}
             </Button>
             <Menu
@@ -76,7 +98,7 @@ export function PublicProfile() {
               {({ close }) => (
                 <>
                   <MenuItem icon={Share2} onClick={() => { close(); toast(t('toast.linkCopied')) }}>{t('common.share')}</MenuItem>
-                  <MenuItem onClick={close}>{t('profile.block')}</MenuItem>
+                  <MenuItem onClick={requireLogin(() => close())}>{t('profile.block')}</MenuItem>
                   <MenuItem danger onClick={() => { close(); setReportOpen(true) }}>{t('common.report')}</MenuItem>
                 </>
               )}

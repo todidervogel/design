@@ -7,6 +7,7 @@ import {
 } from '../../components/ui'
 import { Page } from '../../components/layout'
 import { useDesignState } from '../../lib/design-state'
+import { useRequireLogin } from '../../lib/auth'
 import { places } from '../../mock/places'
 import { dishes, locations, searchPopular, searchRecent, users } from '../../mock/content'
 import { RADIUS_OPTIONS, DEFAULT_RADIUS, PRICE_LEVELS } from '../../config'
@@ -177,6 +178,7 @@ function LocationResults() {
 }
 
 function ProfileResults() {
+  const requireLogin = useRequireLogin()
   const states = ['follow', 'requested', 'following', 'follow']
   return (
     <div>
@@ -187,7 +189,7 @@ function ProfileResults() {
             <p className="t-body-bold">@{u.username}</p>
             <p className="t-small c-secondary">{t('search.profileMeta', { videos: u.videos, reviews: u.reviews })}</p>
           </Link>
-          <Button variant={states[i] === 'follow' ? 'secondary' : 'secondary'} size="sm">
+          <Button variant="secondary" size="sm" onClick={requireLogin(() => {})}>
             {t(`search.${states[i]}`)}
           </Button>
         </div>

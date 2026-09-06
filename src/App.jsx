@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import { DesignStateProvider } from './lib/design-state'
-import { ToastProvider } from './components/ui'
+import { AuthGateProvider, RouteGuard } from './lib/auth'
+import { LoginGate, ToastProvider } from './components/ui'
 import { DevPanel } from './components/layout/DevPanel'
 
 /* Öffentlich (TEIL C) */
@@ -63,78 +64,83 @@ export default function App() {
   return (
     <DesignStateProvider>
       <ToastProvider>
-        <Routes>
-          {/* Öffentlich */}
-          <Route path="/" element={<Home />} />
-          <Route path="/karte" element={<MapView />} />
-          <Route path="/feed" element={<Feed />} />
-          <Route path="/suche" element={<SearchPage />} />
-          <Route path="/g/:slug" element={<PlacePage />} />
-          <Route path="/v/:id" element={<VideoDetail />} />
-          <Route path="/p/:username" element={<PublicProfile />} />
-          <Route path="/fuer-gastronomen" element={<GastroLanding />} />
+        <AuthGateProvider>
+          <RouteGuard>
+            <Routes>
+              {/* Öffentlich */}
+              <Route path="/" element={<Home />} />
+              <Route path="/karte" element={<MapView />} />
+              <Route path="/feed" element={<Feed />} />
+              <Route path="/suche" element={<SearchPage />} />
+              <Route path="/g/:slug" element={<PlacePage />} />
+              <Route path="/v/:id" element={<VideoDetail />} />
+              <Route path="/p/:username" element={<PublicProfile />} />
+              <Route path="/fuer-gastronomen" element={<GastroLanding />} />
 
-          {/* Konto */}
-          <Route path="/registrieren" element={<Register />} />
-          <Route path="/registrieren/code" element={<ConfirmCode />} />
-          <Route path="/anmelden" element={<Login />} />
-          <Route path="/passwort-vergessen" element={<ForgotPassword />} />
-          <Route path="/passwort-neu" element={<NewPassword />} />
+              {/* Konto */}
+              <Route path="/registrieren" element={<Register />} />
+              <Route path="/registrieren/code" element={<ConfirmCode />} />
+              <Route path="/anmelden" element={<Login />} />
+              <Route path="/passwort-vergessen" element={<ForgotPassword />} />
+              <Route path="/passwort-neu" element={<NewPassword />} />
 
-          {/* Nutzer */}
-          <Route path="/upload" element={<UploadCapture />} />
-          <Route path="/upload/bearbeiten" element={<UploadTrim />} />
-          <Route path="/upload/restaurant" element={<UploadPlace />} />
-          <Route path="/upload/bewertung" element={<UploadReview />} />
-          <Route path="/upload/veroeffentlichen" element={<UploadPublish />} />
-          <Route path="/profil" element={<OwnProfile />} />
-          <Route path="/benachrichtigungen" element={<Notifications />} />
-          <Route path="/einstellungen" element={<Settings />} />
-          <Route path="/einstellungen/profil" element={<EditProfile />} />
-          <Route path="/einstellungen/daten" element={<DataExport />} />
+              {/* Nutzer */}
+              <Route path="/upload" element={<UploadCapture />} />
+              <Route path="/upload/bearbeiten" element={<UploadTrim />} />
+              <Route path="/upload/restaurant" element={<UploadPlace />} />
+              <Route path="/upload/bewertung" element={<UploadReview />} />
+              <Route path="/upload/veroeffentlichen" element={<UploadPublish />} />
+              <Route path="/profil" element={<OwnProfile />} />
+              <Route path="/benachrichtigungen" element={<Notifications />} />
+              <Route path="/einstellungen" element={<Settings />} />
+              <Route path="/einstellungen/profil" element={<EditProfile />} />
+              <Route path="/einstellungen/daten" element={<DataExport />} />
 
-          {/* Gastro */}
-          <Route path="/gastro" element={<GastroDashboard />} />
-          <Route path="/gastro/anmelden" element={<GastroLogin />} />
-          <Route path="/gastro/willkommen" element={<GastroWelcome />} />
-          <Route path="/gastro/einrichtung" element={<GastroSetup />} />
-          <Route path="/gastro/videos" element={<GastroVideos />} />
-          <Route path="/gastro/speisekarte" element={<GastroMenu />} />
-          <Route path="/gastro/bewertungen" element={<GastroReviews />} />
-          <Route path="/gastro/profil" element={<GastroProfile />} />
-          <Route path="/gastro/qr" element={<GastroQr />} />
-          <Route path="/gastro/einstellungen" element={<GastroSettings />} />
-          <Route path="/gastro/eintragen" element={<GastroClaim />} />
+              {/* Gastro */}
+              <Route path="/gastro" element={<GastroDashboard />} />
+              <Route path="/gastro/anmelden" element={<GastroLogin />} />
+              <Route path="/gastro/willkommen" element={<GastroWelcome />} />
+              <Route path="/gastro/einrichtung" element={<GastroSetup />} />
+              <Route path="/gastro/videos" element={<GastroVideos />} />
+              <Route path="/gastro/speisekarte" element={<GastroMenu />} />
+              <Route path="/gastro/bewertungen" element={<GastroReviews />} />
+              <Route path="/gastro/profil" element={<GastroProfile />} />
+              <Route path="/gastro/qr" element={<GastroQr />} />
+              <Route path="/gastro/einstellungen" element={<GastroSettings />} />
+              <Route path="/gastro/eintragen" element={<GastroClaim />} />
 
-          {/* Admin */}
-          <Route path="/admin" element={<AdminOverview />} />
-          <Route path="/admin/videos" element={<AdminVideos />} />
-          <Route path="/admin/meldungen" element={<AdminReports />} />
-          <Route path="/admin/betriebe" element={<AdminPlaces />} />
-          <Route path="/admin/einladungen" element={<AdminInvites />} />
-          <Route path="/admin/nutzer" element={<AdminUsers />} />
-          <Route path="/admin/vorschlaege" element={<AdminSuggestions />} />
-          <Route path="/admin/protokoll" element={<AdminLog />} />
+              {/* Admin */}
+              <Route path="/admin" element={<AdminOverview />} />
+              <Route path="/admin/videos" element={<AdminVideos />} />
+              <Route path="/admin/meldungen" element={<AdminReports />} />
+              <Route path="/admin/betriebe" element={<AdminPlaces />} />
+              <Route path="/admin/einladungen" element={<AdminInvites />} />
+              <Route path="/admin/nutzer" element={<AdminUsers />} />
+              <Route path="/admin/vorschlaege" element={<AdminSuggestions />} />
+              <Route path="/admin/protokoll" element={<AdminLog />} />
 
-          {/* Rechtliches */}
-          <Route path="/impressum" element={<Imprint />} />
-          <Route path="/datenschutz" element={<Privacy />} />
-          <Route path="/agb" element={<Terms />} />
-          <Route path="/agb-gastro" element={<GastroTerms />} />
-          <Route path="/richtlinien" element={<Guidelines />} />
-          <Route path="/cookies" element={<CookieSettings />} />
+              {/* Rechtliches */}
+              <Route path="/impressum" element={<Imprint />} />
+              <Route path="/datenschutz" element={<Privacy />} />
+              <Route path="/agb" element={<Terms />} />
+              <Route path="/agb-gastro" element={<GastroTerms />} />
+              <Route path="/richtlinien" element={<Guidelines />} />
+              <Route path="/cookies" element={<CookieSettings />} />
 
-          {/* Fehler */}
-          <Route path="/404" element={<NotFound />} />
-          <Route path="/500" element={<ServerError />} />
-          <Route path="/offline" element={<Offline />} />
-          <Route path="/403" element={<Forbidden />} />
+              {/* Fehler */}
+              <Route path="/404" element={<NotFound />} />
+              <Route path="/500" element={<ServerError />} />
+              <Route path="/offline" element={<Offline />} />
+              <Route path="/403" element={<Forbidden />} />
 
-          {/* Werkzeug: Übersicht aller Screens */}
-          <Route path="/uebersicht" element={<ScreenIndex />} />
+              {/* Werkzeug: Übersicht aller Screens */}
+              <Route path="/uebersicht" element={<ScreenIndex />} />
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </RouteGuard>
+          <LoginGate />
+        </AuthGateProvider>
 
         <DevPanel />
       </ToastProvider>

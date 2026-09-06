@@ -11,6 +11,7 @@ import {
 import { FullscreenPage } from '../../components/layout'
 import { ReportContentDialog } from '../dialogs/ReportContentDialog'
 import { useDesignState } from '../../lib/design-state'
+import { useRequireLogin } from '../../lib/auth'
 import { places } from '../../mock/places'
 import { videos, users } from '../../mock/content'
 import { RADIUS_OPTIONS, DEFAULT_RADIUS, MVP_STAGE } from '../../config'
@@ -24,6 +25,7 @@ export default function Feed() {
   const [reportOpen, setReportOpen] = useState(false)
   const navigate = useNavigate()
   const toast = useToast()
+  const requireLogin = useRequireLogin()
 
   const video = videos[0]
   const author = users.find((u) => u.id === video.authorId)
@@ -97,13 +99,18 @@ export default function Feed() {
           <>
             {/* Rechte Spalte */}
             <div className="feed-rail">
-              <button type="button" className="feed-rail-item" onClick={() => navigate(`/p/${author.username}`)}>
+              <button
+                type="button"
+                className="feed-rail-item"
+                onClick={requireLogin(() => navigate(`/p/${author.username}`))}
+                aria-label={t('feed.follow')}
+              >
                 <span className="feed-avatar-wrap">
                   <Avatar name={author.username} size={44} />
                   <span className="feed-follow-plus"><Plus size={12} /></span>
                 </span>
               </button>
-              <button type="button" className="feed-rail-item" onClick={() => toast(t('toast.saved'))}>
+              <button type="button" className="feed-rail-item" onClick={requireLogin(() => toast(t('toast.saved')))}>
                 <Heart size={28} />
                 <span className="count">{video.likes}</span>
               </button>
@@ -116,7 +123,7 @@ export default function Feed() {
                 <MessageCircle size={28} />
                 {commentsEnabled && <span className="count">{video.comments}</span>}
               </button>
-              <button type="button" className="feed-rail-item" onClick={() => toast(t('toast.saved'))}>
+              <button type="button" className="feed-rail-item" onClick={requireLogin(() => toast(t('toast.saved')))}>
                 <Bookmark size={28} />
               </button>
               <button type="button" className="feed-rail-item" onClick={() => toast(t('toast.linkCopied'))}>

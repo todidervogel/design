@@ -29,6 +29,17 @@
   --star-filled: #E4A02E;
   --star-empty: #D8D8D4;
 
+  /* Getönte Flächen für Badges und Hinweisbänder */
+  --tint-info-bg: #E7EFFA;
+  --tint-info-fg: #1F5FA8;
+  --tint-success-bg: #E7F1EB;
+  --tint-warning-bg: #F7F0DB;
+
+  /* Kartenflächen (C.2, C.3) */
+  --map-bg: #EFEFEA;
+  --map-grid: #E8E8E3;
+  --map-veil: rgba(255, 255, 255, 0.8);
+
   /* A.3 — Abstandsraster */
   --sp-1: 4px;
   --sp-2: 8px;
@@ -55,4 +66,52 @@
 
 @media (min-width: 640px) {
   :root { --gutter: 24px; }
+}
+
+/* ==========================================================================
+   Dunkelmodus — nur in der App (siehe src/lib/design-state.jsx).
+   Die Namen aus A.1 bleiben, damit die Spezifikation lesbar bleibt; getauscht
+   werden nur die Werte. "--bg-light" heißt also weiterhin "Grundfläche",
+   ist hier aber dunkel.
+   ========================================================================== */
+:root[data-theme='dark'] {
+  --bg-light: #131316;
+  --bg-light-alt: #1D1D21;
+  --bg-dark: #0B0B0C;
+  --bg-dark-alt: #17171A;
+
+  --text-primary: #F1F1F3;
+  --text-secondary: #A3A3AC;
+  --text-tertiary: #74747E;
+  --text-on-dark: #FFFFFF;
+  --text-on-dark-dim: #B4B4BC;
+
+  /* Etwas heller als im Hellmodus, damit der Akzent auf Dunkel lesbar bleibt */
+  --accent: #F2704A;
+  --accent-hover: #FF8763;
+  --accent-soft: #2E1A13;
+
+  --border: #2B2B31;
+  --border-strong: #3D3D45;
+
+  --success: #5CB584;
+  --warning: #D8AA47;
+  --danger: #E8756A;
+  --danger-soft: #2E1614;
+
+  --star-filled: #E9AE45;
+  --star-empty: #3D3D45;
+
+  --tint-info-bg: #16233A;
+  --tint-info-fg: #8FBBEE;
+  --tint-success-bg: #14261C;
+  --tint-warning-bg: #2A2415;
+
+  --map-bg: #1A1A1E;
+  --map-grid: #24242A;
+  --map-veil: rgba(0, 0, 0, 0.55);
+
+  --shadow-float: 0 2px 8px rgba(0, 0, 0, 0.4);
+
+  color-scheme: dark;
 }

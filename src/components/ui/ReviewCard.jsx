@@ -5,6 +5,7 @@ import { Button, IconButton } from './Button'
 import { Stars } from './Rating'
 import { Textarea, Field, charCount } from './Field'
 import { useToast } from './Feedback'
+import { useRequireLogin } from '../../lib/auth'
 import { groupSizeLabel, t } from '../../i18n'
 import { users } from '../../mock/content'
 
@@ -33,6 +34,7 @@ const compact = (rating) => {
  */
 export function ReviewCard({ review, variant = 'public', placeName, onReport, onReply }) {
   const toast = useToast()
+  const requireLogin = useRequireLogin()
   const [replyOpen, setReplyOpen] = useState(false)
   const [replyText, setReplyText] = useState('')
   const author = users.find((u) => u.id === review.authorId) ?? users[0]
@@ -99,7 +101,7 @@ export function ReviewCard({ review, variant = 'public', placeName, onReport, on
       <div className="row" style={{ marginTop: 'var(--sp-4)', gap: 'var(--sp-2)' }}>
         {variant === 'public' && (
           <>
-            <Button variant="quiet" size="sm" icon={ThumbsUp} onClick={() => toast(t('toast.saved'))}>{review.likes}</Button>
+            <Button variant="quiet" size="sm" icon={ThumbsUp} onClick={requireLogin(() => toast(t('toast.saved')))}>{review.likes}</Button>
             <span className="spacer" />
             <Button variant="quiet" size="sm" icon={Flag} onClick={onReport}>{t('common.report')}</Button>
           </>

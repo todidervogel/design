@@ -4,6 +4,7 @@ import { Header } from './Header'
 import { Footer } from './Footer'
 import { BottomNav } from './BottomNav'
 import { BuildBanner, CookieBanner } from './Banners'
+import { useDesignState } from '../../lib/design-state'
 
 /** Setzt den Seitentitel und scrollt bei Seitenwechsel nach oben. */
 export function useScreen(title) {
@@ -19,6 +20,7 @@ export function useScreen(title) {
  */
 export function Page({ title, children, footer = true, bottomNav = true, headerSuffix, minimalHeader, wide }) {
   useScreen(title)
+  const { isWeb } = useDesignState()
   return (
     <div className="app-shell">
       <BuildBanner />
@@ -26,7 +28,7 @@ export function Page({ title, children, footer = true, bottomNav = true, headerS
       <main className={`app-main ${bottomNav ? 'has-bottom-nav' : ''}`}>
         {wide ? children : <div className="container">{children}</div>}
       </main>
-      {footer && <Footer />}
+      {footer && isWeb && <Footer />}
       {bottomNav && <BottomNav />}
       <CookieBanner />
     </div>

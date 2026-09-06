@@ -27,7 +27,8 @@ export default function GastroQr() {
           <div
             style={{
               width: 240, height: 240, display: 'grid', placeItems: 'center',
-              border: '1px solid var(--border)', borderRadius: 'var(--r-card)', background: '#fff',
+              border: '1px solid var(--border)', borderRadius: 'var(--r-card)',
+              background: '#fff', color: '#17171A',
             }}
           >
             <QrCode size={180} strokeWidth={1} />

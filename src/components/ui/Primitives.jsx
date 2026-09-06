@@ -47,7 +47,7 @@ export function VerifiedMark({ withLabel }) {
   return withLabel ? (
     <Badge tone="verified" icon={BadgeCheck}>{t('common.verified')}</Badge>
   ) : (
-    <BadgeCheck size={16} style={{ color: '#1F5FA8', flex: 'none' }} aria-label={t('common.verified')} />
+    <BadgeCheck size={16} className="verified-mark" aria-label={t('common.verified')} />
   )
 }
 

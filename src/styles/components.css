@@ -68,8 +68,8 @@
   transition: border-color .12s ease, box-shadow .12s ease;
 }
 .textarea { min-height: 88px; resize: vertical; line-height: 22px; }
-.select { appearance: none; padding-right: 36px; cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B6B72' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+.select { appearance: none; padding-right: 36px; cursor: pointer; color: var(--text-primary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 12px center; }
 
 .input::placeholder, .textarea::placeholder { color: var(--text-tertiary); }
@@ -169,10 +169,10 @@
   background: var(--bg-light-alt); color: var(--text-secondary);
 }
 .badge-accent { background: var(--accent-soft); color: var(--accent-hover); }
-.badge-success { background: #E7F1EB; color: var(--success); }
-.badge-warning { background: #F7F0DB; color: var(--warning); }
+.badge-success { background: var(--tint-success-bg); color: var(--success); }
+.badge-warning { background: var(--tint-warning-bg); color: var(--warning); }
 .badge-danger { background: var(--danger-soft); color: var(--danger); }
-.badge-verified { background: #E7EFFA; color: #1F5FA8; }
+.badge-verified { background: var(--tint-info-bg); color: var(--tint-info-fg); }
 .badge-dark { background: rgba(0,0,0,.6); color: #fff; }
 
 /* Hinweisband */
@@ -182,12 +182,14 @@
   background: var(--bg-light-alt); color: var(--text-primary);
 }
 .notice-accent { background: var(--accent-soft); }
-.notice-success { background: #E7F1EB; color: var(--success); }
+.notice-success { background: var(--tint-success-bg); color: var(--success); }
 .notice-danger { background: var(--danger-soft); color: var(--danger); }
 
 /* ==========================================================================
    TEIL A.6 — Sterne
    ========================================================================== */
+.verified-mark { color: var(--tint-info-fg); flex: none; }
+
 .stars { display: inline-flex; gap: 2px; align-items: center; }
 .star-filled { color: var(--star-filled); fill: var(--star-filled); }
 .star-empty { color: var(--star-empty); fill: var(--star-empty); }
@@ -266,7 +268,7 @@
 .toast .toast-icon { flex: none; }
 .toast-success .toast-icon { color: var(--success); }
 .toast-error .toast-icon { color: var(--danger); }
-.toast-info .toast-icon { color: #1F5FA8; }
+.toast-info .toast-icon { color: var(--tint-info-fg); }
 
 /* ==========================================================================
    Aufklappmenüs

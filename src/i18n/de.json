@@ -402,6 +402,12 @@
       "password": "Neues Passwort",
       "repeat": "Passwort wiederholen",
       "submit": "Passwort speichern"
+    },
+    "gate": {
+      "title": "Dafür brauchst du ein Konto",
+      "text": "Melde dich an, um zu liken, zu folgen und Inhalte zu speichern.",
+      "login": "Anmelden",
+      "register": "Konto erstellen"
     }
   },
   "upload": {
@@ -532,7 +538,9 @@
       "bio": "Biografie",
       "website": "Webseite (optional)",
       "websitePlaceholder": "https://"
-    }
+    },
+    "guestTitle": "Noch nicht angemeldet",
+    "guestText": "Melde dich an, um dein Profil, deine Videos, Bewertungen und gespeicherten Orte zu sehen."
   },
   "settings": {
     "title": "Einstellungen",
@@ -606,6 +614,13 @@
       "activity": "Aktivitätsverlauf",
       "submit": "Datei anfordern",
       "hint": "Wir schicken dir einen Download-Link per E-Mail. Das kann bis zu 48 Stunden dauern."
+    },
+    "appearance": "Darstellung",
+    "appearanceHint": "Der Dunkelmodus gilt für die App.",
+    "appearanceOptions": {
+      "auto": "Automatisch",
+      "light": "Hell",
+      "dark": "Dunkel"
     }
   },
   "notifications": {
@@ -1257,7 +1272,24 @@
     "buildBanner": "Aufbau-Banner (B.5)",
     "cookieBanner": "Cookie-Banner",
     "screenIndex": "Alle Screens",
-    "open": "Design-Panel öffnen"
+    "open": "Design-Panel öffnen",
+    "platform": "Ziel",
+    "platforms": {
+      "web": "Website",
+      "app": "App"
+    },
+    "device": "Gerät",
+    "devices": {
+      "mobile": "Handy",
+      "desktop": "Rechner"
+    },
+    "theme": "Darstellung",
+    "themes": {
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
+    "guestInApp": "Die App kennt keinen Gastmodus — ohne Anmeldung erscheint die Anmeldeseite.",
+    "deviceHint": "Folgt der Fensterbreite — zum Prüfen das Fenster schmaler ziehen."
   },
   "index": {
     "title": "Alle Screens",

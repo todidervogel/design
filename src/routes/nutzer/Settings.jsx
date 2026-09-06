@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Bell, ChevronRight, Cookie, Download, FileText, Globe, Lock, LogOut, Mail,
-  MapPin, Phone, Scale, Shield, Smartphone, User, Video,
+  MapPin, Moon, Phone, Scale, Shield, Smartphone, User, Video,
 } from 'lucide-react'
 import { Button, Field, Input, Switch, Textarea, charCount, useToast } from '../../components/ui'
 import { Page } from '../../components/layout'
@@ -43,7 +43,7 @@ function Section({ title, children }) {
 
 /** E.10 — Einstellungen */
 export default function Settings() {
-  const { setSession } = useDesignState()
+  const { setSession, isApp, theme, setTheme } = useDesignState()
   const [flags, setFlags] = useState({
     private: false, location: true, autoplay: false,
     nFollow: true, nLike: true, nComment: false, nReply: true, nNews: false,
@@ -79,6 +79,30 @@ export default function Settings() {
             control={<Switch checked={flags.location} onChange={set('location')} label={t('settings.location')} />}
           />
         </Section>
+
+        {/* Der Dunkelmodus gehört zur App — im Browser gibt es ihn nicht. */}
+        {isApp && (
+          <Section title={t('settings.appearance')}>
+            <Row
+              icon={Moon}
+              label={t('settings.appearance')}
+              hint={t('settings.appearanceHint')}
+              control={
+                <select
+                  className="select"
+                  style={{ width: 'auto', minHeight: 36 }}
+                  value={theme}
+                  onChange={(e) => setTheme(e.target.value)}
+                  aria-label={t('settings.appearance')}
+                >
+                  {['auto', 'light', 'dark'].map((v) => (
+                    <option key={v} value={v}>{t(`settings.appearanceOptions.${v}`)}</option>
+                  ))}
+                </select>
+              }
+            />
+          </Section>
+        )}
 
         <Section title={t('settings.sections.content')}>
           <Row icon={MapPin} label={t('settings.defaultRadius')} value={`${DEFAULT_RADIUS} km`} to="/einstellungen" />

@@ -13,6 +13,7 @@ import { BarePage } from '../../components/layout'
 import { ReportPlaceDialog } from '../dialogs/ReportPlaceDialog'
 import { ReportContentDialog } from '../dialogs/ReportContentDialog'
 import { useDesignState } from '../../lib/design-state'
+import { useRequireLogin } from '../../lib/auth'
 import { placeBySlug } from '../../mock/places'
 import { dishes, reviews, users, videos } from '../../mock/content'
 import { MVP_STAGE } from '../../config'
@@ -35,6 +36,7 @@ export default function PlacePage() {
   const [hoursOpen, setHoursOpen] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
   const toast = useToast()
+  const requireLogin = useRequireLogin()
   const fromQr = params.get('src') === 'qr'
 
   return (
@@ -59,7 +61,7 @@ export default function PlacePage() {
         </span>
         <span className="cover-actions">
           <IconButton icon={Share2} label={t('common.share')} tone="glass" onClick={() => toast(t('toast.linkCopied'))} />
-          <IconButton icon={Bookmark} label={t('place.save')} tone="glass" onClick={() => toast(t('toast.saved'))} />
+          <IconButton icon={Bookmark} label={t('place.save')} tone="glass" onClick={requireLogin(() => toast(t('toast.saved')))} />
         </span>
       </div>
 
@@ -132,7 +134,7 @@ export default function PlacePage() {
           {MVP_STAGE >= 2 && <Button variant="primary" onClick={() => toast(t('toast.noAction'), 'info')}>{t('place.order')}</Button>}
           <Button variant="secondary" icon={Navigation} onClick={() => toast(t('toast.noAction'), 'info')}>{t('place.route')}</Button>
           <Button variant="secondary" icon={Phone} href={place.phone ? `tel:${place.phone}` : undefined}>{t('place.call')}</Button>
-          <Button variant="secondary" icon={Bookmark} onClick={() => toast(t('toast.saved'))}>{t('place.save')}</Button>
+          <Button variant="secondary" icon={Bookmark} onClick={requireLogin(() => toast(t('toast.saved')))}>{t('place.save')}</Button>
           <Button variant="secondary" icon={Share2} onClick={() => toast(t('toast.linkCopied'))}>{t('common.share')}</Button>
         </div>
 

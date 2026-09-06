@@ -5,6 +5,7 @@ import { IconButton } from './Button'
 import { RatingCompact } from './Rating'
 import { t } from '../../i18n'
 import { useToast } from './Feedback'
+import { useRequireLogin } from '../../lib/auth'
 
 /**
  * Betriebszeile — Ergebnisliste Karte (C.2), Suche (C.5), Videodetail (C.7).
@@ -12,6 +13,7 @@ import { useToast } from './Feedback'
  */
 export function PlaceRow({ place, showSave = true, compact }) {
   const toast = useToast()
+  const requireLogin = useRequireLogin()
   return (
     <div className="place-row">
       <Link to={`/g/${place.slug}`} className="place-thumb-wrap" aria-hidden="true" tabIndex={-1}>
@@ -46,7 +48,7 @@ export function PlaceRow({ place, showSave = true, compact }) {
         <IconButton
           icon={Bookmark}
           label={t('map.save')}
-          onClick={() => toast(t('toast.saved'))}
+          onClick={requireLogin(() => toast(t('toast.saved')))}
         />
       )}
     </div>

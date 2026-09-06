@@ -142,3 +142,13 @@ Die fertige Datei liegt dann unter
   und Herzeigen reicht das.
 - Kamera, Standort und Bestellungen sind Attrappen — der Prototyp hat
   weiterhin keine Logik.
+
+### Was in der App anders ist als auf der Website
+
+Die App erkennt sich selbst (über Capacitor) und verhält sich entsprechend:
+Sie zeigt **Aufnehmen** in der unteren Leiste, kennt **keinen Gastmodus**
+(ohne Anmeldung erscheint die Anmeldeseite), hat **keine Fußzeile** und
+bringt einen **Dunkelmodus** mit, der standardmäßig der Systemeinstellung
+folgt und sich unter *Einstellungen → Darstellung* umstellen lässt.
+
+Zum Vergleichen ohne APK: im Design-Panel unter *Ziel* auf **App** umschalten.
