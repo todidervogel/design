@@ -1,0 +1,50 @@
+/* Nur für die Galerie — gehört nicht zum Design-System. */
+.gal {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--sp-6) var(--gutter) var(--sp-16);
+}
+
+.gal-top {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center;
+  padding: var(--sp-3) var(--gutter);
+  background: var(--bg-light); border-bottom: 1px solid var(--border);
+}
+
+.gal-nav {
+  display: flex; flex-wrap: wrap; gap: var(--sp-2);
+  padding: var(--sp-3) var(--gutter) 0;
+  max-width: 1000px; margin: 0 auto;
+}
+
+.gal-section { padding-top: var(--sp-12); scroll-margin-top: 80px; }
+.gal-section > h2 {
+  padding-bottom: var(--sp-2);
+  border-bottom: 2px solid var(--border-strong);
+  margin-bottom: var(--sp-4);
+}
+
+.gal-note { color: var(--text-secondary); font-size: 13px; line-height: 18px; margin-bottom: var(--sp-4); }
+
+.gal-grid {
+  display: grid; gap: var(--sp-4);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.gal-item {
+  border: 1px solid var(--border); border-radius: var(--r-card);
+  padding: var(--sp-4); background: var(--bg-light);
+  display: grid; gap: var(--sp-3); align-content: start;
+}
+.gal-item > h3 {
+  font-size: 12px; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--text-tertiary); font-weight: 600;
+}
+
+.gal-swatches { display: grid; gap: var(--sp-2); grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.gal-swatch { display: flex; align-items: center; gap: var(--sp-2); font-size: 12px; }
+.gal-chip {
+  width: 28px; height: 28px; border-radius: 6px; flex: none;
+  border: 1px solid var(--border);
+}

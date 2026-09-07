@@ -1,162 +1,103 @@
-# Website und App
+# Design-System
 
-Eine Codebasis, zwei Ziele: die Website im Browser und dieselbe Anwendung als
-Android-App (Capacitor). Seit dem MVP-Ausbau ist das kein statischer Entwurf
-mehr — es gibt eine Datenhaltung, echte Anmeldung, Formularprüfung,
-Ladezustände und Rechte.
+Farben, Schrift, Abstände, Bausteine und **alle Texte**. Kein Bildschirm, keine
+Daten, keine Anmeldung — nur das, woraus die Oberfläche gebaut wird.
 
-> **Noch ohne Server.** Die Daten liegen im Browser, hinter einer Fassade, die
-> sich wie ein Server verhält. Sie ist der Austauschpunkt für Supabase.
-> Videos, Kartenkacheln, GPS, E-Mail und SMS fehlen weiterhin.
+Die Website und die App spielen sich diesen Ordner ein (`npm run sync:design`
+dort). Geändert wird hier, nicht dort.
 
-## Starten
+## Ansehen
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # statischer Export nach dist/
-npm run preview  # dist/ lokal ansehen
+npm run dev        # http://localhost:5173 — die Galerie
 ```
 
-**Auf dem Handy ansehen oder als APK bauen:** siehe [docs/HANDY.md](docs/HANDY.md).
+Die Galerie zeigt jeden Baustein einmal, mit den Zuständen, die im Entwurf
+vorkommen, und einem Schalter für hell und dunkel. Sie ist kein Bestandteil
+des Produkts.
 
-## Anmelden
+```bash
+npm run pruefen:i18n   # findet fehlende Texte, ohne Browser
+npm run build          # Galerie als statische Seite
+```
 
-| Rolle | E-Mail | Passwort |
-|---|---|---|
-| Nutzer | `max@beispiel.de` | `Passwort123` |
-| Gastro | `chef@trattoria-bella.de` | `Gastro123` |
-| Gastro (erstes Login) | `hallo@morgenrot-cafe.de` | `Start1234` |
-| Admin | `ana@intern` | `Admin1234` |
-
-Alles erfunden, alles nur im Browser. Bestätigungscode bei der Registrierung:
-`123456`. Schneller geht es über das Design-Panel — dort steht eine Zeile
-**Rolle** zum direkten Umschalten.
-
-## Design-Panel
-
-Unten rechts sitzt ein kleines Werkzeug — **kein Bestandteil des Produkts**,
-es fällt in Schritt 2 weg.
-
-| Schalter | Wirkung |
-|---|---|
-| **Ziel** | `Website` · `App` |
-| **Rolle** | `Gast` · `Nutzer` · `Gastro` · `Admin` |
-| **Darstellung** | `Auto` · `Hell` · `Dunkel` |
-| **Zustand** | `Gefüllt` · `Leer` · `Ladend` — die drei Varianten aus TEIL K.4 |
-| **Nur Karte** | Vollbildkarte ohne Leisten |
-| **Banner** | Aufbau- und Cookie-Banner |
-| **Daten zurücksetzen** | alles auf den Auslieferungsstand |
-
-Das **Gerät** folgt der Fensterbreite — zum Prüfen das Fenster schmaler ziehen.
-
-## Website und App
-
-| | Website | App |
-|---|---|---|
-| Untere Leiste (mobil) | Feed · Karte · Suche · Profil | zusätzlich **Aufnehmen** mittig |
-| Untere Leiste (Rechner) | keine, die Kopfleiste führt | — |
-| Gastmodus | ja, zum Umsehen | **nein** — ohne Anmeldung erscheint die Anmeldeseite |
-| Fußzeile (B.4) | ja | nein, Rechtstexte stehen in den Einstellungen |
-| Dunkelmodus | ja | ja |
-| Nur-Karte-Ansicht | ja (mobil) | ja (mobil) |
-
-Der Dunkelmodus steht auf **Automatisch** und folgt dem Gerät. Der Umschalter
-sitzt in der Kopfleiste — auch auf der Anmeldeseite, sonst käme man in der App
-gar nicht an ihn heran.
-
-### Was der Gastmodus darf
-
-Ansehen: alles. Beitragen: nichts. Liken, Folgen, Speichern, Melden und
-Hochladen öffnen den Hinweis „Dafür brauchst du ein Konto". Die Regeln stehen
-an einer Stelle: [`src/lib/auth.jsx`](src/lib/auth.jsx).
-
-## Aufbau
+## Was hier liegt
 
 ```
 src/
-  config.js              APP_NAME, MVP-Stufe, Umkreis- und Preisstufen
-  data/seed.js           Ausgangsdaten — Betriebe, Karten, Videos, Konten
+  config.js        APP_NAME, MVP-Stufe, Umkreis- und Preisstufen
+  vocabulary.js    Angebotsarten, Allergene, Kennzeichnung, Merkmale, Kategorien
   i18n/
-    de.json              ALLE Texte — nichts steht fest in den Komponenten
-    index.jsx            t(), tNodes(), groupSizeLabel()
-  lib/
-    store/
-      api.js             ► die Fassade. Hier wird später Supabase eingesetzt.
-      db.js              Datenhaltung im localStorage, versioniert
-      geo.js             Entfernung, Kartenprojektion
-      hours.js           Öffnungszeiten, „jetzt geöffnet"
-      index.jsx          useQuery, useMutation
-    session.jsx          Anmeldung, Rollen, Registrierung
-    form.js              useForm mit Regelwerk und deutschen Fehlermeldungen
-    upload.jsx           der Upload-Entwurf über fünf Schritte
-    auth.jsx             Routenwächter und Anmelde-Schranke
-    design-state.jsx     Ziel, Gerät, Darstellung, Umkreis, Position
-  styles/                Tokens, Grundlagen, Bausteine, Layout (mit Dunkelmodus)
-  components/
-    ui/                  die Bausteine aus TEIL K.7 + Serving, Spinner
-    layout/              Kopfleiste, Fußzeile, untere Navigation, Konsolenrahmen
-  routes/
-    index.js             TEIL J — Routentabelle (auch Grundlage für /uebersicht)
-    public/ konto/ nutzer/ gastro/ admin/ recht/ fehler/ dialogs/
+    de.json        ALLE Texte — nichts steht fest in den Komponenten
+    index.jsx      t(), tNodes(), groupSizeLabel()
+  styles/
+    tokens.css     Farben, Abstände, Radien — hell und dunkel
+    base.css       Typografie und Layout-Grundlagen
+    components.css die Bausteine
+    layout.css     Kopfleiste, Karte, Feed, Speisekarte, Konsolen
+  ui/              die Bausteine
 
-tools/pruefung/          Prüfskripte, siehe tools/pruefung/README.md
+gallery/           die Galerie (kein Produktbestandteil)
 ```
 
-### Die Fassade
+## Zwei Regeln
 
-Kein Screen greift direkt auf Daten zu. Alles läuft über
-[`src/lib/store/api.js`](src/lib/store/api.js):
+**1. Kein Baustein kennt Daten.**
+Keine Anmeldung, kein Netz, kein Speicher. Was angezeigt wird, kommt als
+Eigenschaft herein; was beim Tippen passiert, gibt die Anwendung mit:
 
-```js
-const { data, loading } = useQuery(
-  () => api.places.list({ radiusKm, serving }),
-  [radiusKm, serving],
-  { initial: [] },
-)
+```jsx
+<PlaceRow
+  place={betrieb}
+  openText="Jetzt geöffnet · bis 22:00"
+  saved={gespeichert}
+  onToggleSave={() => …}
+/>
 ```
 
-Die Fassade antwortet mit einer kleinen Verzögerung (`VITE_LATENCY`, Standard
-220 ms) — sonst gäbe es keine Ladezustände zu sehen.
+Deshalb lässt sich hier alles ansehen, ohne einen Server zu starten.
 
-### Produktname
+**2. Keine festen Farbwerte in Komponenten.**
+Immer über die Variablen aus `tokens.css`. Sonst zieht der Dunkelmodus nicht
+mit — und der gilt für Website *und* App, mit „Automatisch" als Standard.
 
-`APP_NAME` steht ausschließlich in `src/config.js`. In Texten wird er über
-`{{app}}` eingesetzt. Aktuell der Arbeitstitel **Tellerrand**.
+## Sterne
 
-### Texte ändern
+Essen, Service und Preis stehen immer getrennt und werden nie zu einer Zahl
+zusammengefasst. Das ist ein bewusstes Unterscheidungsmerkmal gegenüber
+Google, kein Versehen. Mittelwerte mit einer Nachkommastelle, Einzelbewertungen
+als ganze Zahl, die Sternegrafik abgerundet (3,8 → drei volle Sterne).
 
-Alle sichtbaren Texte stehen in `src/i18n/de.json`. Für eine englische Fassung
-genügt später eine zweite Datei mit derselben Struktur.
-`npm run pruefen:i18n` findet Lücken.
+## Angebot
 
-## Prüfen
+Was gibt es hier zu essen und zu trinken — als Symbolzeile, nicht als
+Fließtext. Zehn Werte von `getraenke` bis `glutenfrei` (siehe
+`src/vocabulary.js`). Ein Betrieb mit ausschließlich Getränken bekommt ein
+eigenes, deutliches Etikett: „Nur Getränke".
 
-```bash
-npm run pruefen:i18n         # Übersetzungslücken, ohne Browser
-npm run build:test           # Build mit spürbarer Verzögerung
-npx vite preview --port 4173 --strictPort
-npm run pruefen:routen       # alle Routen × fünf Rollen
-npm run pruefen:verhalten    # 27 Ablauftests
-```
+Wer einen Wert ergänzt, ändert drei Stellen: `src/vocabulary.js`, das Symbol in
+`src/ui/Serving.jsx` und den Text in `src/i18n/de.json` — und dieselbe Liste im
+Server-Repo.
 
-Einzelheiten: [tools/pruefung/README.md](tools/pruefung/README.md).
+## Laden
 
-## Was noch fehlt
+Skelettflächen zuerst — sie zeigen, wie die Seite gleich aussieht. Der Kreisel
+(`Spinner`, `LoadingBlock`) bleibt den Fällen vorbehalten, in denen es nichts
+zu skizzieren gibt: ein laufender Button, ein Nachladen unter bestehendem
+Inhalt.
 
-- **Videos**: Aufnahme, Zuschnitt und Wiedergabe sind angedeutet. Braucht
-  Capacitor-Plugins und Cloudflare Stream.
-- **Karte**: Die Marker stehen an den richtigen Stellen, aber unter ihnen
-  liegen keine Kartenkacheln. MapLibre kommt mit dem Server.
-- **GPS**: Die Position steht fest auf Prenzlauer Berg und lässt sich über die
-  Ortssuche verschieben.
-- **E-Mail und SMS**: Der Bestätigungscode lautet immer `123456`.
-- **Bilder**: Titelbilder und Gerichtsfotos sind Platzhalterflächen.
-- **Rechtstexte**: `/impressum`, `/datenschutz`, `/agb` sind Blindtext und
-  müssen vor dem Start juristisch geprüft werden.
-- **Schrift**: Inter wird nicht mehr von Google geladen (Datenschutz und
-  Ladezeit). Vor dem Start sollte sie selbst ausgeliefert werden — siehe den
-  Kommentar in `index.html`.
+## Schrift
 
-Der weitere Kontext — Konzept, Entscheidungen, Datenmodell, nächste Schritte —
-liegt im Repository **Brain**.
+Nichts wird von außen nachgeladen. Inter wird verwendet, wenn es auf dem Gerät
+vorhanden ist, sonst die Systemschrift. Grund: Google Fonts direkt einzubinden
+überträgt die IP-Adresse der Besucherin an Google und ist ohne Einwilligung
+nach dem Urteil des LG München I (20.01.2022, 3 O 17493/20) angreifbar —
+außerdem blockiert es den Seitenaufbau und funktioniert in der App offline
+nicht. Vor dem Start sollte Inter selbst ausgeliefert werden.
+
+## Texte
+
+Alles in `src/i18n/de.json`. Für eine englische Fassung genügt später eine
+zweite Datei mit derselben Struktur. Fehlt ein Schlüssel, zeigt die Oberfläche
+den Schlüsselnamen — und `npm run pruefen:i18n` findet ihn vorher.

@@ -1,32 +1,23 @@
 {
-  "name": "app-design",
+  "name": "tellerrand-design",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
-  "description": "Website und App in einer Codebasis — Entwurf und MVP-Logik",
+  "description": "Design-System: Farben, Schrift, Bausteine, Texte — plus eine Galerie zum Ansehen",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "build:app": "VITE_BASE=./ vite build",
-    "sync:android": "npm run build:app && cap sync android",
-    "build:test": "VITE_LATENCY=400 vite build",
-    "pruefen:i18n": "node tools/pruefung/i18n-check.mjs",
-    "pruefen:routen": "node tools/pruefung/routen-sweep.mjs",
-    "pruefen:verhalten": "node tools/pruefung/verhalten.mjs"
+    "pruefen:i18n": "node tools/i18n-check.mjs"
   },
   "dependencies": {
-    "@capacitor/android": "^6.2.2",
-    "@capacitor/core": "^6.2.2",
     "lucide-react": "^0.446.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.2.2",
     "@vitejs/plugin-react": "^4.3.1",
-    "playwright": "^1.63.0",
     "vite": "^5.4.8"
   }
 }
