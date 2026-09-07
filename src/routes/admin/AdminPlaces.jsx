@@ -1,19 +1,47 @@
 import { useState } from 'react'
 import { Building2, Search } from 'lucide-react'
-import { Badge, Button, EmptyState, Select } from '../../components/ui'
+import { Badge, Button, EmptyState, Select, useToast } from '../../components/ui'
 import { AdminShell, AdminTable } from './AdminShell'
-import { useDesignState } from '../../lib/design-state'
-import { places } from '../../mock/places'
+import { useVariant } from '../../lib/design-state'
+import { api, useQuery } from '../../lib/store'
+import { patch } from '../../lib/store/db'
 import { t } from '../../i18n'
 
 const STATUSES = ['unclaimed', 'pending', 'verified', 'reportedClosed', 'closing', 'archived']
 const TONE = { unclaimed: 'default', pending: 'warning', verified: 'success', reportedClosed: 'danger', closing: 'danger', archived: 'default' }
 
+/** Der angezeigte Zustand ergibt sich aus Betriebsstatus und Übernahme. */
+function statusOf(place) {
+  if (place.status === 'archived') return 'archived'
+  if (place.status === 'closing') return 'closing'
+  if (place.status === 'closed_reported') return 'reportedClosed'
+  if (place.claimStatus === 'verified') return 'verified'
+  if (place.claimStatus === 'pending') return 'pending'
+  return 'unclaimed'
+}
+
 /** G.5 — Admin-Betriebe */
 export default function AdminPlaces() {
-  const { isEmpty } = useDesignState()
-  const rows = isEmpty ? [] : places
-  const statusFor = (p, i) => (p.verified ? 'verified' : STATUSES[i % STATUSES.length])
+  const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const toast = useToast()
+
+  const { data } = useVariant(useQuery(() => api.admin.places(), [], { initial: [] }))
+  const rows = (data ?? [])
+    .filter((p) => !query || `${p.name} ${p.city}`.toLowerCase().includes(query.toLowerCase()))
+    .filter((p) => !statusFilter || statusOf(p) === statusFilter)
+
+  const verify = async (place) => {
+    patch('places', place.id, { claimStatus: 'verified' })
+    api.admin.log('Betrieb verifiziert', place.name, '')
+    toast(t('common.saved'))
+  }
+
+  const archive = async (place) => {
+    await api.places.setStatus(place.id, place.status === 'archived' ? 'active' : 'archived')
+    api.admin.log('Betrieb archiviert', place.name, '')
+    toast(t('common.saved'))
+  }
 
   return (
     <AdminShell title={t('admin.places.title')}>
@@ -22,13 +50,19 @@ export default function AdminPlaces() {
       <div className="row-wrap" style={{ marginBottom: 'var(--sp-4)' }}>
         <div className="header-search grow" style={{ maxWidth: 320 }}>
           <Search size={16} className="search-icon" />
-          <input className="input" style={{ height: 36, minHeight: 36 }} placeholder={t('common.search')} aria-label={t('common.search')} />
+          <input
+            className="input" style={{ height: 36, minHeight: 36 }}
+            placeholder={t('common.search')} aria-label={t('common.search')}
+            value={query} onChange={(e) => setQuery(e.target.value)}
+          />
         </div>
         <Select
           style={{ width: 'auto', minHeight: 36 }}
           placeholder={t('admin.places.cols.status')}
-          options={STATUSES.map((s) => ({ value: s, label: t(`admin.places.status.${s}`) }))}
+          options={[{ value: '', label: t('common.all') }, ...STATUSES.map((s) => ({ value: s, label: t(`admin.places.status.${s}`) }))]}
           aria-label={t('admin.places.cols.status')}
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
         />
       </div>
 
@@ -40,23 +74,27 @@ export default function AdminPlaces() {
         ]}
         rows={rows}
         empty={<EmptyState icon={Building2} title={t('admin.reports.emptyTitle')} />}
-        renderRow={(p, i) => {
-          const status = statusFor(p, i)
+        renderRow={(p) => {
+          const status = statusOf(p)
           return (
             <tr key={p.id}>
               <td style={{ fontWeight: 600 }}>{p.name}</td>
               <td>{p.city}</td>
               <td><Badge tone={TONE[status]}>{t(`admin.places.status.${status}`)}</Badge></td>
-              <td className="c-secondary">{p.verified ? 'inhaber@beispiel.de' : '—'}</td>
+              <td className="c-secondary">{p.claimedBy ?? '—'}</td>
               <td>{p.videoCount}</td>
               <td>{p.reviewCount}</td>
-              <td className="c-secondary" style={{ whiteSpace: 'nowrap' }}>05.09.2026</td>
+              <td className="c-secondary" style={{ whiteSpace: 'nowrap' }}>{p.osmId}</td>
               <td>
                 <div className="row" style={{ gap: 0, flexWrap: 'nowrap' }}>
                   <Button variant="quiet" size="sm" to={`/g/${p.slug}`}>{t('admin.places.actions.view')}</Button>
-                  <Button variant="quiet" size="sm">{t('admin.places.actions.edit')}</Button>
-                  <Button variant="quiet" size="sm">{t('admin.places.actions.verify')}</Button>
-                  <Button variant="quiet" size="sm">{t('admin.places.actions.archive')}</Button>
+                  <Button variant="quiet" size="sm" to={`/g/${p.slug}/speisekarte`}>{t('menu.title')}</Button>
+                  <Button variant="quiet" size="sm" disabled={status === 'verified'} onClick={() => verify(p)}>
+                    {t('admin.places.actions.verify')}
+                  </Button>
+                  <Button variant="quiet" size="sm" onClick={() => archive(p)}>
+                    {status === 'archived' ? t('common.show') : t('admin.places.actions.archive')}
+                  </Button>
                 </div>
               </td>
             </tr>

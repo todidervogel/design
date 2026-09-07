@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge, Button, Switch } from '../../components/ui'
-import { GastroShell } from './GastroShell'
+import { GastroShell, useMyPlace } from './GastroShell'
 import { ConsoleHeader } from '../../components/layout'
 import { CloseBusinessDialog, VerificationDialog } from '../dialogs/GastroDialogs'
 import { ChevronRight } from 'lucide-react'
+import { api } from '../../lib/store'
 import { t } from '../../i18n'
 
 function Row({ label, hint, to, onClick, control, badge, disabled }) {
@@ -36,13 +37,22 @@ function Section({ title, children }) {
 
 /** F.11 — Gastro-Einstellungen */
 export default function GastroSettings() {
-  const [flags, setFlags] = useState({ nReview: true, nVideo: true, nModeration: true, nNews: false, hidden: false })
+  return (
+    <GastroShell title={t('gastro.settings.title')}>
+      <SettingsBody />
+    </GastroShell>
+  )
+}
+
+function SettingsBody() {
+  const place = useMyPlace()
+  const [flags, setFlags] = useState({ nReview: true, nVideo: true, nModeration: true, nNews: false })
   const [verifyOpen, setVerifyOpen] = useState(false)
   const [closeOpen, setCloseOpen] = useState(false)
   const set = (k) => (v) => setFlags((f) => ({ ...f, [k]: v }))
 
   return (
-    <GastroShell title={t('gastro.settings.title')}>
+    <>
       <ConsoleHeader title={t('gastro.settings.title')} />
 
       <div className="stack-8" style={{ maxWidth: 640 }}>
@@ -54,8 +64,11 @@ export default function GastroSettings() {
 
         <Section title={t('gastro.settings.sections.verification')}>
           <Row
-            label={t('gastro.settings.notVerified')}
-            control={<Button variant="primary" size="sm" onClick={() => setVerifyOpen(true)}>{t('gastro.settings.startVerification')}</Button>}
+            label={place.verified ? t('common.verified') : t('gastro.settings.notVerified')}
+            badge={place.verified ? <Badge tone="verified">{t('common.verified')}</Badge> : null}
+            control={place.verified
+              ? <span className="t-small c-success">✓</span>
+              : <Button variant="primary" size="sm" onClick={() => setVerifyOpen(true)}>{t('gastro.settings.startVerification')}</Button>}
           />
         </Section>
 
@@ -76,7 +89,13 @@ export default function GastroSettings() {
           <Row
             label={t('gastro.settings.hideProfile')}
             hint={t('gastro.settings.hideProfileHint')}
-            control={<Switch checked={flags.hidden} onChange={set('hidden')} label={t('gastro.settings.hideProfile')} />}
+            control={
+              <Switch
+                checked={place.status === 'archived'}
+                onChange={(v) => api.places.setStatus(place.id, v ? 'archived' : 'active')}
+                label={t('gastro.settings.hideProfile')}
+              />
+            }
           />
         </Section>
 
@@ -88,7 +107,7 @@ export default function GastroSettings() {
       </div>
 
       <VerificationDialog open={verifyOpen} onClose={() => setVerifyOpen(false)} />
-      <CloseBusinessDialog open={closeOpen} onClose={() => setCloseOpen(false)} />
-    </GastroShell>
+      <CloseBusinessDialog open={closeOpen} onClose={() => setCloseOpen(false)} place={place} />
+    </>
   )
 }

@@ -57,9 +57,9 @@ export function OnSiteBadge({ tone = 'success' }) {
 }
 
 /** Hinweisband. */
-export function Notice({ tone, icon: Icon, children, className = '' }) {
+export function Notice({ tone, icon: Icon, children, className = '', ...rest }) {
   return (
-    <div className={`notice ${tone ? `notice-${tone}` : ''} ${className}`}>
+    <div className={`notice ${tone ? `notice-${tone}` : ''} ${className}`} {...rest}>
       {Icon && <Icon size={18} style={{ flex: 'none', marginTop: 2 }} />}
       <div className="t-small">{children}</div>
     </div>

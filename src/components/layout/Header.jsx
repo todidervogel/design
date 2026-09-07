@@ -1,10 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { Bell, Bookmark, CircleHelp, LogOut, Menu as MenuIcon, Search, Settings, User } from 'lucide-react'
 import { Avatar, Button, IconButton, Menu, MenuItem, MenuSeparator } from '../ui'
-import { useDesignState } from '../../lib/design-state'
+import { ThemeToggle } from './ThemeToggle'
+import { useSession } from '../../lib/session'
+import { useDbValue } from '../../lib/store'
 import { APP_NAME } from '../../config'
 import { t } from '../../i18n'
-import { me } from '../../mock/content'
 
 /** Wortmarke — zieht den Produktnamen aus der zentralen Konstante. */
 export function Wordmark({ suffix, to = '/' }) {
@@ -22,13 +23,18 @@ export function Wordmark({ suffix, to = '/' }) {
  * Eingeloggt: Suchfeld, Glocke, Avatar mit Aufklappmenü.
  */
 export function Header({ suffix, minimal }) {
-  const { loggedIn, setSession } = useDesignState()
+  const { user, loggedIn, logout } = useSession()
+  const unread = useDbValue((db) => db.notifications.filter((n) => n.userId === user?.id && n.unread).length)
   const navigate = useNavigate()
+
+  const signOut = () => { logout(); navigate('/anmelden', { replace: true }) }
 
   return (
     <header className="header">
       <div className="container header-inner">
         <Wordmark suffix={suffix} />
+
+        {minimal && <span className="header-actions"><ThemeToggle /></span>}
 
         {!minimal && (
           <>
@@ -42,9 +48,10 @@ export function Header({ suffix, minimal }) {
             </form>
 
             <div className="header-actions">
-              {/* Mobil: Suchsymbol und Hamburger-Menü */}
+              {/* Mobil: Suchsymbol, Darstellung und Hamburger-Menü */}
               <span className="only-mobile row" style={{ gap: 0 }}>
                 <IconButton icon={Search} label={t('common.search')} to="/suche" />
+                <ThemeToggle />
                 <Menu
                   align="right"
                   trigger={({ toggle }) => <IconButton icon={MenuIcon} label={t('header.menu')} onClick={toggle} />}
@@ -59,7 +66,7 @@ export function Header({ suffix, minimal }) {
                         <>
                           <MenuItem icon={User} onClick={() => { close(); navigate('/profil') }}>{t('header.avatarMenu.profile')}</MenuItem>
                           <MenuItem icon={Settings} onClick={() => { close(); navigate('/einstellungen') }}>{t('header.avatarMenu.settings')}</MenuItem>
-                          <MenuItem icon={LogOut} onClick={() => { close(); setSession('guest') }}>{t('header.avatarMenu.logout')}</MenuItem>
+                          <MenuItem icon={LogOut} onClick={() => { close(); signOut() }}>{t('header.avatarMenu.logout')}</MenuItem>
                         </>
                       ) : (
                         <>
@@ -73,17 +80,18 @@ export function Header({ suffix, minimal }) {
               </span>
 
               <span className="only-desktop row" style={{ gap: 'var(--sp-2)' }}>
+                <ThemeToggle />
                 {loggedIn ? (
                   <>
                     <span style={{ position: 'relative' }}>
                       <IconButton icon={Bell} label={t('header.notifications')} to="/benachrichtigungen" />
-                      <span className="notif-dot" />
+                      {unread > 0 && <span className="notif-dot" />}
                     </span>
                     <Menu
                       align="right"
                       trigger={({ toggle }) => (
-                        <button type="button" className="btn btn-icon" onClick={toggle} aria-label={me.username}>
-                          <Avatar name={me.username} size={32} />
+                        <button type="button" className="btn btn-icon" onClick={toggle} aria-label={user.username}>
+                          <Avatar name={user.username} size={32} />
                         </button>
                       )}
                     >
@@ -94,7 +102,7 @@ export function Header({ suffix, minimal }) {
                           <MenuItem icon={Settings} onClick={() => { close(); navigate('/einstellungen') }}>{t('header.avatarMenu.settings')}</MenuItem>
                           <MenuSeparator />
                           <MenuItem icon={CircleHelp} onClick={close}>{t('header.avatarMenu.help')}</MenuItem>
-                          <MenuItem icon={LogOut} onClick={() => { close(); setSession('guest') }}>{t('header.avatarMenu.logout')}</MenuItem>
+                          <MenuItem icon={LogOut} onClick={() => { close(); signOut() }}>{t('header.avatarMenu.logout')}</MenuItem>
                         </>
                       )}
                     </Menu>

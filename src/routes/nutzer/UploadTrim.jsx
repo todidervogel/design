@@ -1,14 +1,30 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Lock, Music, Smile, SlidersHorizontal, Type } from 'lucide-react'
 import { Button } from '../../components/ui'
 import { FullscreenPage } from '../../components/layout'
+import { useUpload } from '../../lib/upload'
 import { t } from '../../i18n'
 
 const TOOLS = [
   [Music, 'music'], [Type, 'text'], [SlidersHorizontal, 'filter'], [Smile, 'sticker'],
 ]
 
+const mmss = (total) => `${Math.floor(total / 60)}:${String(Math.round(total % 60)).padStart(2, '0')}`
+
 /** E.2 — Video zuschneiden, Schritt 2 */
 export default function UploadTrim() {
+  const { draft, save } = useUpload()
+  const navigate = useNavigate()
+  const total = draft.durationSec || 1
+  const [from, setFrom] = useState(draft.trimFrom ?? 0)
+  const [to, setTo] = useState(draft.trimTo || total)
+
+  const next = () => {
+    save({ trimFrom: from, trimTo: to })
+    navigate('/upload/restaurant')
+  }
+
   return (
     <FullscreenPage title={t('upload.trim.title')} bottomNav={false}>
       <div className="fullheight" style={{ display: 'flex', flexDirection: 'column', color: '#fff' }}>
@@ -22,11 +38,31 @@ export default function UploadTrim() {
               {Array.from({ length: 10 }).map((_, i) => (
                 <span key={i} style={{ flex: 1, background: i > 1 && i < 8 ? '#3A3A44' : '#22222A' }} />
               ))}
-              <span style={{ position: 'absolute', left: '18%', top: 0, bottom: 0, width: 10, background: 'var(--accent)', borderRadius: '4px 0 0 4px', cursor: 'ew-resize' }} />
-              <span style={{ position: 'absolute', left: '78%', top: 0, bottom: 0, width: 10, background: 'var(--accent)', borderRadius: '0 4px 4px 0', cursor: 'ew-resize' }} />
+              <span style={{ position: 'absolute', left: `${(from / total) * 100}%`, top: 0, bottom: 0, width: 10, background: 'var(--accent)', borderRadius: '4px 0 0 4px' }} />
+              <span style={{ position: 'absolute', left: `calc(${(to / total) * 100}% - 10px)`, top: 0, bottom: 0, width: 10, background: 'var(--accent)', borderRadius: '0 4px 4px 0' }} />
             </div>
+
+            <div className="stack-2" style={{ marginTop: 'var(--sp-3)' }}>
+              <label className="t-small c-on-dark-dim">
+                {t('hours.from')}
+                <input
+                  type="range" min={0} max={Math.max(total - 1, 0)} value={from}
+                  onChange={(e) => setFrom(Math.min(Number(e.target.value), to - 1))}
+                  style={{ width: '100%', accentColor: 'var(--accent)' }}
+                />
+              </label>
+              <label className="t-small c-on-dark-dim">
+                {t('hours.to')}
+                <input
+                  type="range" min={1} max={total} value={to}
+                  onChange={(e) => setTo(Math.max(Number(e.target.value), from + 1))}
+                  style={{ width: '100%', accentColor: 'var(--accent)' }}
+                />
+              </label>
+            </div>
+
             <p className="t-small c-on-dark-dim" style={{ marginTop: 'var(--sp-2)' }}>
-              {t('upload.trim.selected', { from: '0:12', to: '0:47', seconds: 35 })}
+              {t('upload.trim.selected', { from: mmss(from), to: mmss(to), seconds: to - from })}
             </p>
           </div>
 
@@ -54,7 +90,7 @@ export default function UploadTrim() {
             <Button variant="secondary" to="/upload" style={{ color: '#fff', borderColor: 'rgba(255,255,255,.4)' }}>
               {t('common.back')}
             </Button>
-            <Button variant="primary" to="/upload/restaurant">{t('common.next')}</Button>
+            <Button variant="primary" onClick={next}>{t('common.next')}</Button>
           </div>
         </div>
       </div>

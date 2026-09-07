@@ -92,8 +92,18 @@
   background: var(--bg-light); border-radius: var(--r-card); box-shadow: var(--shadow-float);
   padding: var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-3);
 }
-.map-locate { position: absolute; right: var(--sp-3); bottom: 96px; z-index: 10;
-  background: var(--bg-light); box-shadow: var(--shadow-float); }
+.map-tools {
+  position: absolute; right: var(--sp-3); z-index: 25;
+  display: grid; gap: var(--sp-2);
+  /* Über dem Ergebnisblatt (max. 62 % hoch) — sonst nicht erreichbar. */
+  bottom: calc(62% + var(--sp-3));
+}
+.map-tool { background: var(--bg-light); box-shadow: var(--shadow-float); }
+@media (min-width: 1024px) {
+  .map-tools { bottom: var(--sp-6); }
+}
+/* In der reinen Ansicht gibt es kein Blatt — dann dürfen sie nach unten. */
+.map-page.is-pure .map-tools { bottom: calc(var(--sp-8) + env(safe-area-inset-bottom, 0px)); }
 .map-attribution {
   position: absolute; bottom: 0; left: 0; right: 0; z-index: 5;
   padding: 3px var(--sp-2); background: var(--map-veil);
@@ -334,3 +344,173 @@
 .dev-panel .seg button { border: 0; background: transparent; border-radius: 6px; padding: 6px 4px;
   cursor: pointer; font-size: 12px; }
 .dev-panel .seg button[aria-pressed='true'] { background: var(--bg-light); font-weight: 600; box-shadow: var(--shadow-float); }
+
+/* ==========================================================================
+   Reine Speisekarte — /g/[slug]/speisekarte
+   Eigene Seite ohne App-Rahmen: lesen, nicht bedienen.
+   ========================================================================== */
+.menu-page {
+  min-height: 100vh; min-height: 100dvh;
+  background: var(--bg-light);
+  padding-bottom: var(--sp-16);
+}
+
+.menu-head { border-bottom: 1px solid var(--border); }
+
+.menu-head-inner {
+  max-width: 760px; margin: 0 auto;
+  padding: var(--sp-6) var(--gutter) var(--sp-4);
+  display: grid; gap: var(--sp-2);
+}
+
+.menu-back {
+  display: inline-flex; align-items: center; gap: 2px;
+  color: var(--text-secondary); text-decoration: none;
+  font-size: 13px; line-height: 18px;
+}
+.menu-back:hover { color: var(--accent); }
+
+.menu-sticky {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--bg-light);
+  border-top: 1px solid var(--border);
+  box-shadow: var(--shadow-float);
+}
+
+.menu-search {
+  position: relative;
+  max-width: 760px; margin: 0 auto;
+  padding: var(--sp-3) var(--gutter) 0;
+}
+.menu-search .search-icon {
+  position: absolute; left: calc(var(--gutter) + 12px); top: calc(var(--sp-3) + 13px);
+  color: var(--text-tertiary); pointer-events: none;
+}
+.menu-search .input { padding-left: 40px; padding-right: 40px; }
+.menu-search-clear {
+  position: absolute; right: calc(var(--gutter) + 8px); top: calc(var(--sp-3) + 8px);
+  display: grid; place-items: center; width: 28px; height: 28px;
+  border: 0; background: none; color: var(--text-secondary); cursor: pointer;
+}
+
+.menu-jump {
+  display: flex; gap: var(--sp-2); overflow-x: auto;
+  max-width: 760px; margin: 0 auto;
+  padding: var(--sp-3) var(--gutter);
+  scrollbar-width: none;
+}
+.menu-jump::-webkit-scrollbar { display: none; }
+.menu-jump .chip { white-space: nowrap; }
+
+.menu-body { max-width: 760px; margin: 0 auto; padding: 0 var(--gutter); }
+
+.menu-section { padding-top: var(--sp-8); scroll-margin-top: 96px; }
+.menu-section-title {
+  padding-bottom: var(--sp-2);
+  border-bottom: 2px solid var(--border-strong);
+}
+
+.menu-list { list-style: none; margin: 0; padding: 0; }
+
+.menu-item {
+  display: flex; gap: var(--sp-4); align-items: flex-start;
+  padding: var(--sp-4) 0;
+  border-bottom: 1px solid var(--border);
+}
+.menu-item:last-child { border-bottom: 0; }
+.menu-item.is-unavailable { opacity: .55; }
+
+.menu-item-main { flex: 1; display: grid; gap: var(--sp-1); min-width: 0; }
+
+.menu-item-name {
+  font-size: 16px; line-height: 22px; font-weight: 600; color: var(--text-primary);
+}
+.menu-item-allergens {
+  margin-left: 3px; font-size: 10px; font-weight: 400; color: var(--text-tertiary);
+}
+
+.menu-item-marks:empty { display: none; }
+.menu-item-marks { gap: 4px; }
+
+.menu-item-price {
+  flex: none; font-size: 16px; line-height: 22px; font-weight: 600;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+
+.menu-foot {
+  margin-top: var(--sp-12); padding-top: var(--sp-6);
+  border-top: 1px solid var(--border);
+  display: grid; gap: var(--sp-4);
+}
+
+.menu-legend {
+  margin: var(--sp-3) 0 0; padding: 0; list-style: none;
+  display: grid; gap: var(--sp-1);
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+.menu-legend li { display: flex; gap: var(--sp-2); align-items: baseline; }
+.menu-allergen-no {
+  flex: none; min-width: 18px; height: 18px; border-radius: var(--r-pill);
+  display: inline-grid; place-items: center;
+  background: var(--bg-light-alt); border: 1px solid var(--border);
+  font-size: 10px; color: var(--text-secondary);
+}
+
+.menu-foot-actions { padding-top: var(--sp-2); }
+
+/* Auf dem Papier bleibt nur die Karte übrig. */
+@media print {
+  .menu-sticky, .menu-back, .menu-foot-actions, .dev-toggle, .dev-panel { display: none !important; }
+  .menu-page { background: #fff; }
+  .menu-item { break-inside: avoid; }
+}
+
+/* Reine Kartenansicht: die Karte nimmt den ganzen Bildschirm ein */
+.map-page.is-pure { height: 100vh; height: 100dvh; }
+
+/* Eigener Standort als kleiner blauer Punkt */
+.map-me {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--tint-info-fg); border: 2px solid #fff;
+  box-shadow: 0 0 0 6px rgba(31, 95, 168, .18);
+}
+
+/* Vorschaukarte zum angetippten Marker */
+.map-preview {
+  position: absolute; left: var(--sp-3); right: var(--sp-3);
+  bottom: calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  z-index: 15;
+  background: var(--bg-light); border: 1px solid var(--border);
+  border-radius: var(--r-card); box-shadow: var(--shadow-float);
+  padding: var(--sp-4);
+}
+.map-preview.is-inline {
+  position: static; margin: 0 var(--sp-4) var(--sp-3); box-shadow: none;
+}
+.map-preview-close { position: absolute; top: 4px; right: 4px; }
+.map-preview-body { display: grid; gap: 4px; text-decoration: none; padding-right: 32px; }
+
+@media (min-width: 1024px) {
+  .map-preview { left: auto; right: var(--sp-4); width: 320px; }
+}
+
+/* Blätterhilfe im Feed — wischen geht auch, aber nicht mit der Maus */
+.feed-paging {
+  position: absolute; right: var(--sp-3); top: 50%; transform: translateY(-50%);
+  z-index: 12; display: grid; gap: var(--sp-2); justify-items: center;
+}
+.feed-paging button {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer;
+  background: rgba(255, 255, 255, .14); border: 0; color: #fff;
+}
+.feed-paging button:disabled { opacity: .3; cursor: default; }
+@media (max-width: 640px) { .feed-paging { display: none; } }
+
+.feed-rail-item.is-active { color: var(--accent); }
+
+/* Angebotszeile in der Restaurantleiste des Feeds */
+.feed-serving { margin-top: 4px; }
+.feed-serving .serving-chip {
+  background: rgba(255, 255, 255, .14); border-color: transparent; color: rgba(255, 255, 255, .82);
+}

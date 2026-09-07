@@ -1,14 +1,21 @@
+import { useState } from 'react'
 import { FileClock } from 'lucide-react'
 import { EmptyState, Input, Select } from '../../components/ui'
 import { AdminShell, AdminTable } from './AdminShell'
-import { useDesignState } from '../../lib/design-state'
-import { adminLog } from '../../mock/content'
+import { useVariant } from '../../lib/design-state'
+import { api, useQuery } from '../../lib/store'
 import { t } from '../../i18n'
 
 /** G.9 — Admin-Protokoll (nur lesbar) */
 export default function AdminLog() {
-  const { isEmpty } = useDesignState()
-  const rows = isEmpty ? [] : adminLog
+  const [who, setWho] = useState('')
+  const [day, setDay] = useState('')
+
+  const { data } = useVariant(useQuery(() => api.admin.auditLog(), [], { initial: [] }))
+  const rows = (data ?? [])
+    .filter((l) => !who || l.admin === who)
+    .filter((l) => !day || l.at.startsWith(day))
+  const admins = [...new Set((data ?? []).map((l) => l.admin))]
 
   return (
     <AdminShell title={t('admin.log.title')}>
@@ -18,10 +25,17 @@ export default function AdminLog() {
         <Select
           style={{ width: 'auto', minHeight: 36 }}
           placeholder={t('admin.log.filterAdmin')}
-          options={['ana@intern', 'ben@intern']}
+          options={[{ value: '', label: t('common.all') }, ...admins.map((a) => ({ value: a, label: a }))]}
           aria-label={t('admin.log.filterAdmin')}
+          value={who}
+          onChange={(e) => setWho(e.target.value)}
         />
-        <Input type="date" style={{ width: 'auto', minHeight: 36 }} aria-label={t('admin.log.filterRange')} />
+        <Input
+          type="date" style={{ width: 'auto', minHeight: 36 }}
+          aria-label={t('admin.log.filterRange')}
+          value={day}
+          onChange={(e) => setDay(e.target.value)}
+        />
       </div>
 
       <AdminTable
@@ -32,8 +46,8 @@ export default function AdminLog() {
         rows={rows}
         empty={<EmptyState icon={FileClock} title={t('admin.reports.emptyTitle')} />}
         renderRow={(l) => (
-          <tr key={l.time + l.action}>
-            <td style={{ whiteSpace: 'nowrap' }}>{l.time}</td>
+          <tr key={l.id}>
+            <td style={{ whiteSpace: 'nowrap' }}>{l.at.replace('T', ' ').slice(0, 16)}</td>
             <td>{l.admin}</td>
             <td>{l.action}</td>
             <td className="c-secondary">{l.object}</td>

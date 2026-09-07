@@ -1,6 +1,8 @@
 import { Route, Routes } from 'react-router-dom'
 import { DesignStateProvider } from './lib/design-state'
+import { SessionProvider } from './lib/session'
 import { AuthGateProvider, RouteGuard } from './lib/auth'
+import { UploadProvider, UploadStepGuard } from './lib/upload'
 import { LoginGate, ToastProvider } from './components/ui'
 import { DevPanel } from './components/layout/DevPanel'
 
@@ -10,6 +12,7 @@ import MapView from './routes/public/MapView'
 import Feed from './routes/public/Feed'
 import SearchPage from './routes/public/SearchPage'
 import PlacePage from './routes/public/PlacePage'
+import MenuPage from './routes/public/MenuPage'
 import VideoDetail from './routes/public/VideoDetail'
 
 /* Konto (TEIL D) */
@@ -64,7 +67,9 @@ export default function App() {
   return (
     <DesignStateProvider>
       <ToastProvider>
-        <AuthGateProvider>
+        <SessionProvider>
+          <AuthGateProvider>
+          <UploadProvider>
           <RouteGuard>
             <Routes>
               {/* Öffentlich */}
@@ -73,6 +78,7 @@ export default function App() {
               <Route path="/feed" element={<Feed />} />
               <Route path="/suche" element={<SearchPage />} />
               <Route path="/g/:slug" element={<PlacePage />} />
+              <Route path="/g/:slug/speisekarte" element={<MenuPage />} />
               <Route path="/v/:id" element={<VideoDetail />} />
               <Route path="/p/:username" element={<PublicProfile />} />
               <Route path="/fuer-gastronomen" element={<GastroLanding />} />
@@ -86,10 +92,10 @@ export default function App() {
 
               {/* Nutzer */}
               <Route path="/upload" element={<UploadCapture />} />
-              <Route path="/upload/bearbeiten" element={<UploadTrim />} />
-              <Route path="/upload/restaurant" element={<UploadPlace />} />
-              <Route path="/upload/bewertung" element={<UploadReview />} />
-              <Route path="/upload/veroeffentlichen" element={<UploadPublish />} />
+              <Route path="/upload/bearbeiten" element={<UploadStepGuard needs={['video']}><UploadTrim /></UploadStepGuard>} />
+              <Route path="/upload/restaurant" element={<UploadStepGuard needs={['video']}><UploadPlace /></UploadStepGuard>} />
+              <Route path="/upload/bewertung" element={<UploadStepGuard needs={['video', 'place']}><UploadReview /></UploadStepGuard>} />
+              <Route path="/upload/veroeffentlichen" element={<UploadStepGuard needs={['video', 'place']}><UploadPublish /></UploadStepGuard>} />
               <Route path="/profil" element={<OwnProfile />} />
               <Route path="/benachrichtigungen" element={<Notifications />} />
               <Route path="/einstellungen" element={<Settings />} />
@@ -139,10 +145,11 @@ export default function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </RouteGuard>
-          <LoginGate />
-        </AuthGateProvider>
-
-        <DevPanel />
+          </UploadProvider>
+            <LoginGate />
+            <DevPanel />
+          </AuthGateProvider>
+        </SessionProvider>
       </ToastProvider>
     </DesignStateProvider>
   )

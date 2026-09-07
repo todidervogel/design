@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { SlidersHorizontal, X } from 'lucide-react'
-import { Switch } from '../ui'
+import { RotateCcw, SlidersHorizontal, X } from 'lucide-react'
+import { Switch, useToast } from '../ui'
 import { useDesignState } from '../../lib/design-state'
+import { useSession } from '../../lib/session'
+import { getDb, resetDb } from '../../lib/store'
 import { t } from '../../i18n'
 
-/** Kleine Auswahlleiste mit zwei oder drei Schaltern. */
+/** Kleine Auswahlleiste mit zwei oder mehr Schaltern. */
 function Segmented({ label, options, value, onChange, hint }) {
   return (
     <div>
@@ -31,12 +33,26 @@ function Segmented({ label, options, value, onChange, hint }) {
 
 /**
  * Design-Panel — Werkzeug für die Abnahme, kein Bestandteil des Produkts.
- * Schaltet Ziel (Website/App), Gerät, Anmeldung, Darstellung, die drei
- * Screen-Varianten (K.4) und die beiden Banner um.
+ *
+ * Schaltet Ziel, Rolle, Darstellung, die drei Screen-Varianten (K.4), die
+ * beiden Banner und die reine Kartenansicht um und setzt die Daten zurück.
+ * Fällt in Schritt 2 komplett weg.
  */
 export function DevPanel() {
   const [open, setOpen] = useState(false)
   const s = useDesignState()
+  const session = useSession()
+  const toast = useToast()
+
+  /* In welcher Rolle sind wir gerade? */
+  const role = session.loggedIn ? session.role : 'guest'
+
+  const switchRole = (next) => {
+    if (next === 'guest') return session.logout()
+    const wanted = { user: 'u1', gastro: 'g1', admin: 'a1' }[next]
+    const found = getDb().users.find((u) => u.id === wanted)
+    return session.switchTo(found?.id ?? null)
+  }
 
   if (!open) {
     return (
@@ -76,24 +92,21 @@ export function DevPanel() {
         </p>
 
         <Segmented
-          label={t('dev.session')}
-          value={s.session}
-          onChange={s.setSession}
-          hint={s.isApp ? t('dev.guestInApp') : undefined}
-          options={[
-            { id: 'guest', label: t('dev.sessions.guest') },
-            { id: 'user', label: t('dev.sessions.user') },
-          ]}
+          label={t('dev.role')}
+          value={role}
+          onChange={switchRole}
+          hint={s.isApp && role === 'guest' ? t('dev.guestInApp') : t('dev.passwords')}
+          options={['guest', 'user', 'gastro', 'admin'].map((id) => ({ id, label: t(`dev.roles.${id}`) }))}
         />
 
         <Segmented
-          label={t('dev.theme')}
-          value={s.darkMode ? 'dark' : 'light'}
-          onChange={(v) => s.setTheme(v)}
-          hint={s.isWeb ? t('settings.appearanceHint') : undefined}
+          label={t('theme.label')}
+          value={s.theme}
+          onChange={s.setTheme}
           options={[
-            { id: 'light', label: t('dev.themes.light') },
-            { id: 'dark', label: t('dev.themes.dark'), disabled: s.isWeb },
+            { id: 'auto', label: t('dev.themes.auto') },
+            { id: 'light', label: t('theme.light') },
+            { id: 'dark', label: t('theme.dark') },
           ]}
         />
 
@@ -105,6 +118,10 @@ export function DevPanel() {
         />
 
         <div className="row-between">
+          <span className="t-small">{t('dev.pureMap')}</span>
+          <Switch checked={s.pureMap} onChange={s.setPureMap} label={t('dev.pureMap')} />
+        </div>
+        <div className="row-between">
           <span className="t-small">{t('dev.buildBanner')}</span>
           <Switch checked={s.buildBanner} onChange={s.setBuildBanner} label={t('dev.buildBanner')} />
         </div>
@@ -112,6 +129,14 @@ export function DevPanel() {
           <span className="t-small">{t('dev.cookieBanner')}</span>
           <Switch checked={s.cookieBanner} onChange={s.setCookieBanner} label={t('dev.cookieBanner')} />
         </div>
+
+        <button
+          type="button"
+          className="btn btn-secondary btn-full btn-sm"
+          onClick={() => { resetDb(); toast(t('dev.resetDone')) }}
+        >
+          <RotateCcw size={16} /> {t('dev.reset')}
+        </button>
 
         <Link to="/uebersicht" className="btn btn-secondary btn-full btn-sm" onClick={() => setOpen(false)}>
           {t('dev.screenIndex')}

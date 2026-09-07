@@ -1,42 +1,28 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useDesignState } from './design-state'
+import { useSession } from './session'
 
 /**
- * Zwei Regeln rund um die Anmeldung:
+ * Zugang zu den Routen und die Schranke vor allen Beiträgen.
  *
- * 1. In der App gibt es keinen Gastmodus. Wer nicht angemeldet ist, landet
- *    auf der Anmeldung — nur die Konto-, Rechts- und Fehlerseiten sind offen.
- *
+ * 1. In der App gibt es keinen Gastmodus: Wer nicht angemeldet ist, landet
+ *    auf der Anmeldung — offen bleiben nur Konto-, Rechts- und Fehlerseiten.
  * 2. Auf der Website darf man sich als Gast umsehen, aber nichts beitragen:
  *    liken, folgen, speichern und hochladen fragen erst nach einem Konto.
- *
- * Wie überall im Prototyp passiert dabei nichts Echtes — die Schranke zeigt
- * einen Dialog beziehungsweise leitet weiter.
+ * 3. Der Gastro-Bereich gehört Gastro-Konten, der Admin-Bereich Admins.
  */
 
 /** Ohne Anmeldung erreichbar, auch in der App. */
 const OPEN_PATHS = [
-  '/anmelden',
-  '/registrieren',
-  '/passwort-vergessen',
-  '/passwort-neu',
-  '/gastro',
-  '/impressum',
-  '/datenschutz',
-  '/agb',
-  '/agb-gastro',
-  '/richtlinien',
-  '/cookies',
-  '/uebersicht',
-  '/404',
-  '/500',
-  '/403',
-  '/offline',
+  '/anmelden', '/registrieren', '/passwort-vergessen', '/passwort-neu',
+  '/gastro/anmelden', '/gastro/willkommen', '/gastro/eintragen', '/fuer-gastronomen',
+  '/impressum', '/datenschutz', '/agb', '/agb-gastro', '/richtlinien', '/cookies',
+  '/uebersicht', '/404', '/500', '/403', '/offline',
 ]
 
-/** Beitragen — auf der Website erst nach Anmeldung erreichbar. */
-const CONTRIBUTE_PATHS = ['/upload']
+/** Auf der Website erst nach Anmeldung erreichbar. */
+const MEMBER_PATHS = ['/upload', '/einstellungen', '/benachrichtigungen']
 
 const isUnder = (pathname, list) =>
   list.some((p) => pathname === p || pathname.startsWith(`${p}/`))
@@ -44,15 +30,12 @@ const isUnder = (pathname, list) =>
 const AuthGateContext = createContext(null)
 
 export function AuthGateProvider({ children }) {
-  const { loggedIn } = useDesignState()
+  const { loggedIn } = useSession()
   const [open, setOpen] = useState(false)
 
   /**
    * Führt die Aktion aus, wenn jemand angemeldet ist — sonst erscheint der
    * Hinweis, dass dafür ein Konto nötig ist.
-   *
-   *   const requireLogin = useRequireLogin()
-   *   <button onClick={requireLogin(() => toast('Gespeichert'))}>…</button>
    */
   const requireLogin = useCallback(
     (action) => (event) => {
@@ -64,7 +47,7 @@ export function AuthGateProvider({ children }) {
   )
 
   const value = useMemo(
-    () => ({ requireLogin, gateOpen: open, closeGate: () => setOpen(false) }),
+    () => ({ requireLogin, gateOpen: open, closeGate: () => setOpen(false), openGate: () => setOpen(true) }),
     [requireLogin, open],
   )
 
@@ -81,18 +64,30 @@ export function useRequireLogin() {
   return useAuthGate().requireLogin
 }
 
-/**
- * Wacht über den Zugang zu den Routen.
- * App ohne Anmeldung → Anmeldung. Website als Gast → Upload gesperrt.
- */
 export function RouteGuard({ children }) {
-  const { isApp, loggedIn } = useDesignState()
+  const { isApp } = useDesignState()
+  const { loggedIn, role, mustChangePassword } = useSession()
   const { pathname } = useLocation()
+
+  /* Erstes Passwort setzen, bevor der Gastro-Bereich freigegeben wird (F.2). */
+  if (loggedIn && mustChangePassword && pathname !== '/gastro/willkommen') {
+    return <Navigate to="/gastro/willkommen" replace />
+  }
+
+  if (pathname.startsWith('/admin')) {
+    if (role !== 'admin') return <Navigate to={loggedIn ? '/403' : '/anmelden'} replace />
+    return children
+  }
+
+  if (pathname.startsWith('/gastro') && !isUnder(pathname, OPEN_PATHS)) {
+    if (role === 'gastro' || role === 'admin') return children
+    return <Navigate to={loggedIn ? '/403' : '/gastro/anmelden'} replace />
+  }
 
   if (loggedIn) return children
   if (isUnder(pathname, OPEN_PATHS)) return children
   if (isApp) return <Navigate to="/anmelden" replace />
-  if (isUnder(pathname, CONTRIBUTE_PATHS)) return <Navigate to="/anmelden" replace />
+  if (isUnder(pathname, MEMBER_PATHS)) return <Navigate to="/anmelden" replace />
 
   return children
 }

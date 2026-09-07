@@ -1,21 +1,43 @@
 import { useState } from 'react'
 import { QrCode } from 'lucide-react'
 import { Button, Card, Field, Input, Select, charCount, useToast } from '../../components/ui'
-import { GastroShell } from './GastroShell'
+import { GastroShell, useMyPlace } from './GastroShell'
 import { ConsoleHeader } from '../../components/layout'
-import { myPlace } from '../../mock/places'
 import { t } from '../../i18n'
 
 const TEMPLATES = ['a6', 'a4', 'sticker', 'plain']
 
 /** F.10 — Gastro-QR-Codes */
 export default function GastroQr() {
+  return (
+    <GastroShell title={t('gastro.qr.title')}>
+      <QrBody />
+    </GastroShell>
+  )
+}
+
+function QrBody() {
+  const place = useMyPlace()
   const [template, setTemplate] = useState('a6')
+  const [target, setTarget] = useState('place')
   const [text, setText] = useState(t('gastro.qr.textPlaceholder'))
   const toast = useToast()
 
+  /* Der Code führt entweder auf die Gastro-Seite oder direkt in die Karte. */
+  const path = target === 'menu' ? `/g/${place.slug}/speisekarte?src=qr` : `/g/${place.slug}?src=qr`
+  const url = `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, '')}${path}`
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url)
+      toast(t('toast.linkCopied'))
+    } catch {
+      toast(t('toast.error'), 'error')
+    }
+  }
+
   return (
-    <GastroShell title={t('gastro.qr.title')}>
+    <>
       <ConsoleHeader title={t('gastro.qr.title')} />
       <p className="t-body c-secondary" style={{ marginTop: 'calc(var(--sp-6) * -1)', marginBottom: 'var(--sp-6)', maxWidth: 560 }}>
         {t('gastro.qr.text')}
@@ -33,8 +55,9 @@ export default function GastroQr() {
           >
             <QrCode size={180} strokeWidth={1} />
           </div>
-          <p className="t-body-bold">{myPlace.name}</p>
+          <p className="t-body-bold">{place.name}</p>
           <p className="t-small c-secondary" style={{ textAlign: 'center' }}>{text}</p>
+          <p className="t-tiny c-tertiary" style={{ textAlign: 'center', wordBreak: 'break-all' }}>{url}</p>
         </Card>
 
         {/* Einstellungen */}
@@ -61,6 +84,18 @@ export default function GastroQr() {
             </div>
           </div>
 
+          <div>
+            <p className="field-label">{t('gastro.qr.targetLabel')}</p>
+            <div className="seg">
+              <button type="button" aria-pressed={target === 'place'} onClick={() => setTarget('place')}>
+                {t('gastro.nav.profile')}
+              </button>
+              <button type="button" aria-pressed={target === 'menu'} onClick={() => setTarget('menu')}>
+                {t('menu.title')}
+              </button>
+            </div>
+          </div>
+
           <Field label={t('gastro.qr.textLabel')} count={charCount(text, 60)}>
             {(id) => <Input id={id} maxLength={60} value={text} onChange={(e) => setText(e.target.value)} />}
           </Field>
@@ -70,12 +105,13 @@ export default function GastroQr() {
           </Field>
 
           <div className="row-wrap">
-            <Button variant="secondary" onClick={() => toast(t('toast.noAction'), 'info')}>{t('gastro.qr.preview')}</Button>
+            <Button variant="secondary" href={path}>{t('gastro.qr.preview')}</Button>
+            <Button variant="secondary" onClick={copy}>{t('common.copy')}</Button>
             <Button variant="primary" onClick={() => toast(t('toast.noAction'), 'info')}>{t('gastro.qr.downloadPdf')}</Button>
             <Button variant="quiet" onClick={() => toast(t('toast.noAction'), 'info')}>{t('gastro.qr.downloadPng')}</Button>
           </div>
         </div>
       </div>
-    </GastroShell>
+    </>
   )
 }

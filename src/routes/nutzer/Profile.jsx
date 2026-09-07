@@ -1,16 +1,16 @@
 import { useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Bookmark, Camera, ClipboardList, Ellipsis, Lock, Settings, Share2, UserRound } from 'lucide-react'
 import {
-  Avatar, Badge, Button, EmptyState, IconButton, Menu, MenuItem, PlaceRow,
-  ReviewCard, ReviewCardSkeleton, Skeleton, Tabs, VideoTile, useToast,
+  Avatar, Badge, Button, EmptyState, IconButton, LoadingBlock, Menu, MenuItem, PlaceRow,
+  ReviewCard, ReviewCardSkeleton, Skeleton, SkeletonTile, Spinner, Tabs, VideoTile, useToast,
 } from '../../components/ui'
 import { Page } from '../../components/layout'
 import { ReportContentDialog } from '../dialogs/ReportContentDialog'
-import { useDesignState } from '../../lib/design-state'
+import { useSession } from '../../lib/session'
 import { useRequireLogin } from '../../lib/auth'
-import { me, reviews, users, videos } from '../../mock/content'
-import { places } from '../../mock/places'
+import { api, useQuery } from '../../lib/store'
+import { useVariant } from '../../lib/design-state'
 import { t } from '../../i18n'
 
 const TABS = [
@@ -23,7 +23,7 @@ const TABS = [
 export function OwnProfile() {
   const [params] = useSearchParams()
   const [tab, setTab] = useState(params.get('tab') === 'saved' ? 'saved' : 'videos')
-  const { loggedIn } = useDesignState()
+  const { user, loggedIn, userId } = useSession()
   const toast = useToast()
 
   if (!loggedIn) {
@@ -43,9 +43,10 @@ export function OwnProfile() {
   }
 
   return (
-    <Page title={`@${me.username}`} footer={false}>
+    <Page title={`@${user.username}`} footer={false}>
       <ProfileHeader
-        user={me}
+        user={user}
+        loading={false}
         actions={
           <>
             <Button variant="secondary" to="/einstellungen/profil">{t('profile.edit')}</Button>
@@ -58,9 +59,9 @@ export function OwnProfile() {
       <Tabs items={TABS} value={tab} onChange={setTab} />
 
       <div style={{ paddingBlock: 'var(--sp-6) var(--sp-16)' }}>
-        {tab === 'videos' && <VideosTab own />}
-        {tab === 'reviews' && <ReviewsTab own />}
-        {tab === 'saved' && <SavedTab />}
+        {tab === 'videos' && <VideosTab userId={userId} own />}
+        {tab === 'reviews' && <ReviewsTab userId={userId} own />}
+        {tab === 'saved' && <SavedTab userId={userId} />}
       </div>
     </Page>
   )
@@ -69,15 +70,47 @@ export function OwnProfile() {
 /** E.8 — Fremdes Profil */
 export function PublicProfile() {
   const { username } = useParams()
-  const user = users.find((u) => u.username === username) ?? users[1]
+  const { userId, loggedIn } = useSession()
   const [tab, setTab] = useState('videos')
-  const [follow, setFollow] = useState('follow')
   const [reportOpen, setReportOpen] = useState(false)
   const toast = useToast()
   const requireLogin = useRequireLogin()
+  const navigate = useNavigate()
 
-  const followLabel = { follow: t('profile.follow'), requested: t('profile.requested'), following: `${t('profile.following')} ✓` }
-  const nextFollow = { follow: user.private ? 'requested' : 'following', requested: 'follow', following: 'follow' }
+  const { data: user, loading } = useVariant(useQuery(() => api.users.byUsername(username), [username]))
+
+  const follow = user && loggedIn ? api.social.followState(userId, user.id) : 'none'
+  const followLabel = {
+    none: t('profile.follow'),
+    pending: t('profile.requested'),
+    accepted: `${t('profile.following')} ✓`,
+  }
+
+  if (loading) {
+    return (
+      <Page title={t('common.loading')} footer={false}>
+        <ProfileHeader loading />
+        <LoadingBlock />
+      </Page>
+    )
+  }
+
+  if (!user) {
+    return (
+      <Page title={t('errors.e404.title')} footer={false}>
+        <div style={{ paddingBlock: 'var(--sp-16)' }}>
+          <EmptyState
+            icon={UserRound}
+            title={t('errors.e404.title')}
+            text={t('errors.e404.text')}
+            action={<Button variant="primary" to="/suche">{t('common.search')}</Button>}
+          />
+        </div>
+      </Page>
+    )
+  }
+
+  const hidden = user.private && follow !== 'accepted' && user.id !== userId
 
   return (
     <Page title={`@${user.username}`} footer={false}>
@@ -86,8 +119,8 @@ export function PublicProfile() {
         actions={
           <>
             <Button
-              variant={follow === 'follow' ? 'primary' : 'secondary'}
-              onClick={requireLogin(() => setFollow(nextFollow[follow]))}
+              variant={follow === 'none' ? 'primary' : 'secondary'}
+              onClick={requireLogin(() => api.social.toggleFollow(userId, user.id))}
             >
               {followLabel[follow]}
             </Button>
@@ -98,7 +131,7 @@ export function PublicProfile() {
               {({ close }) => (
                 <>
                   <MenuItem icon={Share2} onClick={() => { close(); toast(t('toast.linkCopied')) }}>{t('common.share')}</MenuItem>
-                  <MenuItem onClick={requireLogin(() => close())}>{t('profile.block')}</MenuItem>
+                  <MenuItem onClick={requireLogin(() => { close(); toast(t('toast.saved')) })}>{t('profile.block')}</MenuItem>
                   <MenuItem danger onClick={() => { close(); setReportOpen(true) }}>{t('common.report')}</MenuItem>
                 </>
               )}
@@ -107,7 +140,7 @@ export function PublicProfile() {
         }
       />
 
-      {user.private && follow !== 'following' ? (
+      {hidden ? (
         <div style={{ paddingBlock: 'var(--sp-12) var(--sp-16)' }}>
           <EmptyState
             icon={Lock}
@@ -119,28 +152,32 @@ export function PublicProfile() {
         <>
           <Tabs items={TABS.slice(0, 2)} value={tab} onChange={setTab} />
           <div style={{ paddingBlock: 'var(--sp-6) var(--sp-16)' }}>
-            {tab === 'videos' && <VideosTab />}
-            {tab === 'reviews' && <ReviewsTab />}
+            {tab === 'videos' && <VideosTab userId={user.id} />}
+            {tab === 'reviews' && <ReviewsTab userId={user.id} />}
           </div>
         </>
       )}
 
-      <ReportContentDialog open={reportOpen} onClose={() => setReportOpen(false)} />
+      <ReportContentDialog
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        target={{ type: 'profile', id: user.id, label: `@${user.username}` }}
+      />
     </Page>
   )
 }
 
-function ProfileHeader({ user, actions }) {
-  const { isLoading } = useDesignState()
+function ProfileHeader({ user, actions, loading }) {
   return (
     <section
       style={{ paddingBlock: 'var(--sp-8)', display: 'grid', gap: 'var(--sp-3)', justifyItems: 'center', textAlign: 'center' }}
     >
-      {isLoading ? (
+      {loading || !user ? (
         <>
           <Skeleton w={96} h={96} radius="50%" />
           <Skeleton w={160} h={20} />
           <Skeleton w={220} h={12} />
+          <Spinner label={t('common.loading')} />
         </>
       ) : (
         <>
@@ -151,9 +188,9 @@ function ProfileHeader({ user, actions }) {
           </div>
           {user.bio && <p className="t-body clamp-3" style={{ maxWidth: 460 }}>{user.bio}</p>}
           <div className="row" style={{ gap: 'var(--sp-6)' }}>
-            <span className="t-body"><strong>{user.videos}</strong> <span className="c-secondary">{t('profile.counts.videos')}</span></span>
-            <span className="t-body"><strong>{user.followers}</strong> <span className="c-secondary">{t('profile.counts.followers')}</span></span>
-            <span className="t-body"><strong>{user.following}</strong> <span className="c-secondary">{t('profile.counts.following')}</span></span>
+            <span className="t-body"><strong>{user.videoCount}</strong> <span className="c-secondary">{t('profile.counts.videos')}</span></span>
+            <span className="t-body"><strong>{user.followerCount}</strong> <span className="c-secondary">{t('profile.counts.followers')}</span></span>
+            <span className="t-body"><strong>{user.followingCount}</strong> <span className="c-secondary">{t('profile.counts.following')}</span></span>
           </div>
           {user.private && <Badge icon={Lock}>{t('common.privateProfile')}</Badge>}
           <div className="row-wrap" style={{ justifyContent: 'center' }}>{actions}</div>
@@ -163,19 +200,28 @@ function ProfileHeader({ user, actions }) {
   )
 }
 
-function VideosTab({ own }) {
-  const { isEmpty, isLoading } = useDesignState()
-  const list = isEmpty ? [] : videos
+/**
+ * Die Kacheln laden jetzt wirklich — deshalb gibt es hier auch wirklich
+ * einen Ladezustand: Skelettkacheln plus Kreisel, statt eines Sprungs
+ * von leer auf voll.
+ */
+function VideosTab({ userId, own }) {
+  const { data, loading } = useVariant(
+    useQuery(() => api.videos.byAuthor(userId, { own }), [userId, own], { initial: [] }),
+  )
+  const list = data ?? []
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="video-grid">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} h={0} style={{ aspectRatio: '9 / 16', height: 'auto' }} radius="var(--r-card)" />
-        ))}
-      </div>
+      <>
+        <div className="video-grid">
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonTile key={i} />)}
+        </div>
+        <div className="refresh-bar"><Spinner label={t('common.loading')} /></div>
+      </>
     )
   }
+
   if (list.length === 0) {
     return (
       <EmptyState
@@ -186,40 +232,45 @@ function VideosTab({ own }) {
       />
     )
   }
+
   return (
     <div className="video-grid">
       {list.map((v) => (
-        <VideoTile key={v.id} to={`/v/${v.id}`} views={v.views} locked={v.visibility !== 'public'} />
+        <VideoTile
+          key={v.id}
+          to={`/v/${v.id}`}
+          views={v.views.toLocaleString('de-DE')}
+          locked={v.visibility !== 'public'}
+          pending={v.status === 'pending_review'}
+        />
       ))}
     </div>
   )
 }
 
-function ReviewsTab({ own }) {
-  const { isEmpty, isLoading } = useDesignState()
-  const list = isEmpty ? [] : reviews
+function ReviewsTab({ userId, own }) {
+  const { data, loading } = useVariant(
+    useQuery(() => api.reviews.byAuthor(userId), [userId], { initial: [] }),
+  )
+  const list = data ?? []
 
-  if (isLoading) return <div className="stack-4">{Array.from({ length: 2 }).map((_, i) => <ReviewCardSkeleton key={i} />)}</div>
+  if (loading) return <div className="stack-4">{Array.from({ length: 2 }).map((_, i) => <ReviewCardSkeleton key={i} />)}</div>
   if (list.length === 0) {
     return <EmptyState icon={ClipboardList} title={t('profile.empty.reviewsTitle')} text={t('profile.empty.reviewsText')} />
   }
   return (
     <div className="stack-4">
-      {list.map((r) => {
-        const place = places.find((p) => p.id === r.placeId)
-        return <ReviewCard key={r.id} review={r} variant={own ? 'own' : 'public'} placeName={place?.name} />
-      })}
+      {list.map((r) => <ReviewCard key={r.id} review={r} variant={own ? 'own' : 'public'} placeName={r.placeName} />)}
     </div>
   )
 }
 
-function SavedTab() {
-  const { isEmpty } = useDesignState()
+function SavedTab({ userId }) {
   const [sub, setSub] = useState('videos')
-
-  if (isEmpty) {
-    return <EmptyState icon={Bookmark} title={t('profile.empty.savedTitle')} text={t('profile.empty.savedText')} />
-  }
+  const { data, loading } = useVariant(
+    useQuery(() => api.social.saved(userId, sub === 'videos' ? 'video' : 'place'), [userId, sub], { initial: [] }),
+  )
+  const list = data ?? []
 
   return (
     <div>
@@ -230,13 +281,18 @@ function SavedTab() {
           </button>
         ))}
       </div>
-      {sub === 'videos' ? (
+
+      {loading ? (
+        <LoadingBlock />
+      ) : list.length === 0 ? (
+        <EmptyState icon={Bookmark} title={t('profile.empty.savedTitle')} text={t('profile.empty.savedText')} />
+      ) : sub === 'videos' ? (
         <div className="video-grid">
-          {videos.slice(0, 4).map((v) => <VideoTile key={v.id} to={`/v/${v.id}`} views={v.views} />)}
+          {list.map((v) => <VideoTile key={v.id} to={`/v/${v.id}`} views={v.views.toLocaleString('de-DE')} />)}
         </div>
       ) : (
         <div className="list-group">
-          {places.slice(0, 3).map((p) => <PlaceRow key={p.id} place={p} />)}
+          {list.map((p) => <PlaceRow key={p.id} place={p} />)}
         </div>
       )}
     </div>

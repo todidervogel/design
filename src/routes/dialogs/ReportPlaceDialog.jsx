@@ -1,16 +1,36 @@
 import { useState } from 'react'
 import { Button, Field, Modal, ModalActions, Radio, Textarea, charCount, useToast } from '../../components/ui'
+import { api } from '../../lib/store'
+import { useSession } from '../../lib/session'
 import { t } from '../../i18n'
 
 const REASONS = ['closed', 'address', 'hours', 'contact', 'notExist', 'other']
 
 /** C.4 — Dialog „Problem melden“ (Betrieb) */
-export function ReportPlaceDialog({ open, onClose }) {
+export function ReportPlaceDialog({ open, onClose, place }) {
   const [reason, setReason] = useState('closed')
   const [text, setText] = useState('')
+  const [busy, setBusy] = useState(false)
+  const { userId } = useSession()
   const toast = useToast()
 
-  const submit = () => {
+  /**
+   * Ab drei unabhängigen Meldungen „dauerhaft geschlossen" bekommt der Betrieb
+   * den Status closed_reported und landet als Aufgabe bei der Moderation (8.7).
+   */
+  const submit = async () => {
+    if (!place) return
+    setBusy(true)
+    await api.reports.create({
+      targetType: 'place',
+      targetId: place.id,
+      label: place.name,
+      reason: reason === 'closed' || reason === 'notExist' ? 'venue_closed' : 'wrong_info',
+      note: `${t(`reportPlace.reasons.${reason}`)}${text ? ` — ${text}` : ''}`,
+      reporterId: userId,
+    })
+    setBusy(false)
+    setText('')
     onClose?.()
     toast(t('toast.reportThanks'))
   }
@@ -22,7 +42,7 @@ export function ReportPlaceDialog({ open, onClose }) {
       title={t('reportPlace.title')}
       actions={
         <ModalActions onCancel={onClose}>
-          <Button variant="primary" onClick={submit}>{t('reportPlace.submit')}</Button>
+          <Button variant="primary" loading={busy} onClick={submit}>{t('reportPlace.submit')}</Button>
         </ModalActions>
       }
     >

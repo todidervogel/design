@@ -1,7 +1,9 @@
 import {
   BarChart3, Building2, FileClock, Flag, Lightbulb, Mail, Users, Video,
 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { ConsolePage } from '../../components/layout'
+import { useSession } from '../../lib/session'
 import { t } from '../../i18n'
 
 const ITEMS = [
@@ -21,6 +23,9 @@ const ITEMS = [
  * keine Akzentflächen außer bei Aktionen.
  */
 export function AdminShell({ title, children }) {
+  const { user, logout } = useSession()
+  const navigate = useNavigate()
+
   return (
     <ConsolePage
       admin
@@ -29,8 +34,15 @@ export function AdminShell({ title, children }) {
       base="/admin"
       footerSlot={
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: 'var(--sp-3)', marginTop: 'var(--sp-3)' }}>
-          <p className="t-small">ana@intern</p>
-          <button type="button" className="btn btn-quiet btn-sm" style={{ marginLeft: -8 }}>{t('admin.logout')}</button>
+          <p className="t-small">{user?.email ?? '—'}</p>
+          <button
+            type="button"
+            className="btn btn-quiet btn-sm"
+            style={{ marginLeft: -8 }}
+            onClick={() => { logout(); navigate('/anmelden', { replace: true }) }}
+          >
+            {t('admin.logout')}
+          </button>
         </div>
       }
     >
