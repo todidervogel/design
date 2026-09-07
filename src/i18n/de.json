@@ -464,7 +464,9 @@
     },
     "demoHint": "Testzugänge: max@beispiel.de · chef@trattoria-bella.de · ana@intern — Passwort steht im Design-Panel.",
     "codeHint": "Im Test lautet der Code 123456.",
-    "loggedOut": "Du bist abgemeldet."
+    "loggedOut": "Du bist abgemeldet.",
+    "forgotTestHint": "Im Testbetrieb verschicken wir keine E-Mails. Melde dich an und ändere das Passwort in den Einstellungen.",
+    "newPasswordNeedsLogin": "Zum Ändern des Passworts musst du angemeldet sein."
   },
   "upload": {
     "capture": {
@@ -1393,7 +1395,13 @@
     "resetHint": "Setzt alle Eingaben auf den Auslieferungsstand zurück.",
     "resetDone": "Daten zurückgesetzt.",
     "passwords": "Passwörter: Passwort123 · Gastro123 · Admin1234",
-    "pureMap": "Nur Karte"
+    "pureMap": "Nur Karte",
+    "mode": "Betriebsart",
+    "modes": {
+      "local": "Allein im Browser",
+      "server": "Gegen den Server"
+    },
+    "rolesNeedLogin": "Im Serverbetrieb geht der Rollenwechsel über die Anmeldung."
   },
   "index": {
     "title": "Alle Screens",

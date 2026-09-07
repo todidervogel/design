@@ -1,12 +1,12 @@
-# Baut den Prototyp und veröffentlicht ihn als Website auf GitHub Pages.
-# Danach ist er unter https://<benutzer>.github.io/design/ vom Handy aus erreichbar.
+# Veröffentlicht die Galerie als Website auf GitHub Pages.
+# Danach ist sie unter https://<konto>.github.io/design/ auch am Handy zu sehen.
 #
-# Einmalig nötig: Repository → Settings → Pages → Source: "GitHub Actions".
-name: Website veröffentlichen
+# Einmalig nötig: Settings → Pages → Source: "GitHub Actions".
+name: Galerie veröffentlichen
 
 on:
   push:
-    branches: ['claude/design-spec-screens-components-omyfb5', 'main']
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  bauen:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,27 +31,26 @@ jobs:
 
       - run: npm ci
 
+      - name: Übersetzungen prüfen
+        run: npm run pruefen:i18n
+
       # Der Pfad muss zum Repository-Namen passen: /<repo>/
       - name: Bauen
-        run: VITE_BASE=/${{ github.event.repository.name }}/ npm run build
-
-      # GitHub Pages liefert 404.html für unbekannte Pfade aus. Da der Prototyp
-      # seine Routen selbst auflöst, genügt eine Kopie der Startseite, damit
-      # Direktaufrufe wie /karte funktionieren.
-      - name: Fallback für Unterseiten
-        run: cp dist/index.html dist/404.html
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+        run: npm run build
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
-  deploy:
-    needs: build
+  veroeffentlichen:
+    needs: bauen
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.pages.outputs.page_url }}
     steps:
-      - id: deployment
+      - id: pages
         uses: actions/deploy-pages@v4

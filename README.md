@@ -22,6 +22,11 @@ npm run pruefen:i18n   # findet fehlende Texte, ohne Browser
 npm run build          # Galerie als statische Seite
 ```
 
+Ohne Rechner geht es auch: **Settings → Pages → Source: „GitHub Actions"**
+einmal einstellen, danach veröffentlicht jeder Push auf `main` die Galerie
+unter `https://<konto>.github.io/design/` — praktisch, um sie am Handy
+anzusehen.
+
 ## Was hier liegt
 
 ```
