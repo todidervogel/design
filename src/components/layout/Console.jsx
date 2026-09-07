@@ -1,8 +1,8 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { Header, Wordmark } from './Header'
 import { useScreen } from './Shell'
 import { Avatar, Button } from '../ui'
-import { useDesignState } from '../../lib/design-state'
+import { useSession } from '../../lib/session'
 import { t } from '../../i18n'
 
 /**
@@ -41,7 +41,8 @@ export function ConsolePage({ title, items, base, footerSlot, children, admin, h
 
 /** Fuß der Gastro-Seitenleiste: Betriebsname, Vorschaubild, Abmelden. */
 export function ConsoleAccount({ name, sub }) {
-  const { setSession } = useDesignState()
+  const { logout } = useSession()
+  const navigate = useNavigate()
   return (
     <div style={{ borderTop: '1px solid var(--border)', paddingTop: 'var(--sp-3)', marginTop: 'var(--sp-3)' }}>
       <div className="row">
@@ -51,7 +52,7 @@ export function ConsoleAccount({ name, sub }) {
           {sub && <p className="t-small c-secondary truncate">{sub}</p>}
         </div>
       </div>
-      <Button variant="quiet" size="sm" onClick={() => setSession('guest')} style={{ marginTop: 4 }}>
+      <Button variant="quiet" size="sm" onClick={() => { logout(); navigate('/anmelden', { replace: true }) }} style={{ marginTop: 4 }}>
         {t('header.avatarMenu.logout')}
       </Button>
     </div>

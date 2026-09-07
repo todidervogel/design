@@ -3,37 +3,59 @@ import { ChevronDown, Star } from 'lucide-react'
 import {
   Card, Chip, EmptyState, Menu, ReviewCard, ReviewCardSkeleton, Stars,
 } from '../../components/ui'
-import { GastroShell } from './GastroShell'
+import { GastroShell, useMyPlace } from './GastroShell'
 import { ConsoleHeader } from '../../components/layout'
 import { ReportReviewDialog } from '../dialogs/GastroDialogs'
-import { useDesignState } from '../../lib/design-state'
-import { kpis, reviews } from '../../mock/content'
-import { myPlace } from '../../mock/places'
+import { useVariant } from '../../lib/design-state'
+import { api, useQuery } from '../../lib/store'
 import { t } from '../../i18n'
 
 const FILTERS = ['all', 'unanswered', 'withVideo', 'lowStars']
-const DISTRIBUTION = [[5, 12], [4, 7], [3, 3], [2, 1], [1, 1]]
 
 /** F.7 — Gastro-Bewertungen */
 export default function GastroReviews() {
-  const { isEmpty, isLoading } = useDesignState()
-  const [filter, setFilter] = useState('all')
-  const [reportOpen, setReportOpen] = useState(false)
-  const list = isEmpty ? [] : reviews
-  const total = DISTRIBUTION.reduce((sum, [, n]) => sum + n, 0)
-
   return (
     <GastroShell title={t('gastro.reviews.title')}>
+      <ReviewsBody />
+    </GastroShell>
+  )
+}
+
+function ReviewsBody() {
+  const place = useMyPlace()
+  const [filter, setFilter] = useState('all')
+  const [reportTarget, setReportTarget] = useState(null)
+
+  const { data, loading } = useVariant(
+    useQuery(() => api.reviews.byPlace(place.id), [place.id], { initial: [] }),
+  )
+  const all = data ?? []
+
+  const list = all.filter((r) => {
+    if (filter === 'unanswered') return !r.answer
+    if (filter === 'withVideo') return !!r.videoId
+    if (filter === 'lowStars') return (r.ratingFood ?? 5) <= 2
+    return true
+  })
+
+  /* Die Verteilung ergibt sich aus den Bewertungen selbst. */
+  const distribution = [5, 4, 3, 2, 1].map((stars) => [
+    stars, all.filter((r) => Math.round(r.ratingFood ?? 0) === stars).length,
+  ])
+  const total = Math.max(distribution.reduce((sum, [, n]) => sum + n, 0), 1)
+
+  return (
+    <>
       <ConsoleHeader title={t('gastro.reviews.title')} />
 
-      {!isEmpty && (
+      {all.length > 0 && (
         <Card style={{ marginBottom: 'var(--sp-6)' }}>
           <div style={{ display: 'grid', gap: 'var(--sp-6)', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}>
             {[
-              [t('rating.food'), myPlace.rating.food],
-              [t('rating.service'), myPlace.rating.service],
-              [t('rating.price'), myPlace.rating.price],
-            ].map(([label, value]) => (
+              [t('rating.food'), place.rating?.food],
+              [t('rating.service'), place.rating?.service],
+              [t('rating.price'), place.rating?.price],
+            ].filter(([, value]) => value != null).map(([label, value]) => (
               <div key={label}>
                 <p className="t-small c-secondary">{label}</p>
                 <p className="kpi-value">{value.toFixed(1).replace('.', ',')}</p>
@@ -44,7 +66,7 @@ export default function GastroReviews() {
 
           <div style={{ marginTop: 'var(--sp-6)', display: 'grid', gap: 6, maxWidth: 420 }}>
             <p className="t-small c-secondary">{t('gastro.reviews.distribution')}</p>
-            {DISTRIBUTION.map(([stars, count]) => (
+            {distribution.map(([stars, count]) => (
               <div className="row" key={stars} style={{ gap: 'var(--sp-2)' }}>
                 <span className="t-small" style={{ width: 30 }}>{stars} <Star size={11} className="star-filled" strokeWidth={0} /></span>
                 <span style={{ flex: 1, height: 8, borderRadius: 'var(--r-pill)', background: 'var(--bg-light-alt)' }}>
@@ -78,19 +100,24 @@ export default function GastroReviews() {
         </Menu>
       </div>
 
-      {isLoading ? (
+      {loading ? (
         <div className="stack-3">{Array.from({ length: 3 }).map((_, i) => <ReviewCardSkeleton key={i} />)}</div>
       ) : list.length === 0 ? (
         <EmptyState icon={Star} title={t('gastro.reviews.emptyTitle')} text={t('gastro.reviews.emptyText')} />
       ) : (
         <div className="stack-3">
           {list.map((r) => (
-            <ReviewCard key={r.id} review={r} variant="gastro" onReport={() => setReportOpen(true)} />
+            <ReviewCard
+              key={r.id}
+              review={r}
+              variant="gastro"
+              onReport={() => setReportTarget({ type: 'review', id: r.id, label: `${r.id} · ${place.name}` })}
+            />
           ))}
         </div>
       )}
 
-      <ReportReviewDialog open={reportOpen} onClose={() => setReportOpen(false)} />
-    </GastroShell>
+      <ReportReviewDialog open={!!reportTarget} onClose={() => setReportTarget(null)} target={reportTarget} />
+    </>
   )
 }

@@ -1,23 +1,21 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { Capacitor } from '@capacitor/core'
+import { HOME_POSITION } from '../data/seed'
+import { DEFAULT_RADIUS } from '../config'
 
 /**
- * Globaler Zustand des Prototyps.
+ * Zustand der Oberfläche — alles, was nicht in der Datenhaltung steht.
  *
- * TEIL K.4 — Jeder Screen hat drei Varianten: gefüllt, leer, ladend.
- *
- * Zusätzlich steuerbar (alles über das Design-Panel umschaltbar, damit sich
- * jede Kombination ansehen lässt, ohne etwas neu zu bauen):
- *
- *  - platform: 'web' | 'app'   Website im Browser oder verpackte App
- *  - device:   'mobile' | 'desktop'
- *  - session:  'guest' | 'user'
- *  - theme:    'light' | 'dark' | 'auto'   (Dunkelmodus gibt es nur in der App)
- *  - buildBanner / cookieBanner
+ *  platform  'web' | 'app'     Website im Browser oder verpackte App
+ *  device    'mobile' | 'desktop'
+ *  theme     'auto' | 'light' | 'dark'   (jetzt auf beiden Zielen)
+ *  pureMap   Vollbildkarte ohne Leisten
+ *  position  aktueller Kartenmittelpunkt (später echtes GPS)
+ *  radiusKm  eingestellter Umkreis
+ *  state     nur für die Abnahme: gefüllt / leer / ladend erzwingen
  */
 const DesignStateContext = createContext(null)
 
-/** Läuft der Code in der verpackten App oder im Browser? */
 function detectPlatform() {
   try {
     return Capacitor.isNativePlatform() ? 'app' : 'web'
@@ -26,17 +24,12 @@ function detectPlatform() {
   }
 }
 
-/**
- * Handy oder Rechner? Auf der Website macht das einen Unterschied:
- * Mobil gibt es die untere Navigationsleiste, am Rechner die Kopfleiste.
- */
 function detectDevice() {
   if (typeof window === 'undefined') return 'desktop'
   const ua = navigator.userAgent || ''
   const mobileOs = /Android|iPhone|iPad|iPod/i.test(ua)
   const narrow = window.matchMedia('(max-width: 1023px)').matches
-  const touch = window.matchMedia('(pointer: coarse)').matches
-  return mobileOs || (narrow && touch) || narrow ? 'mobile' : 'desktop'
+  return mobileOs || narrow ? 'mobile' : 'desktop'
 }
 
 function detectOs() {
@@ -47,11 +40,7 @@ function detectOs() {
   return 'desktop'
 }
 
-/**
- * Die Einstellungen des Design-Panels überleben ein Neuladen — sonst fällt
- * jeder direkt geöffnete Link zurück auf „Website, Gast, hell".
- */
-const STORE_KEY = 'design-panel'
+const STORE_KEY = 'app-ui'
 
 function readStore() {
   try {
@@ -65,38 +54,43 @@ function writeStore(value) {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(value))
   } catch {
-    /* Privater Modus o. Ä. — dann eben ohne Gedächtnis. */
+    /* Privater Modus — dann eben ohne Gedächtnis. */
   }
 }
 
-function systemPrefersDark() {
-  return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-}
+const systemPrefersDark = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
 
 export function DesignStateProvider({ children }) {
   const stored = readStore()
 
-  const [state, setState] = useState(stored.state ?? 'filled')
-  // In der verpackten App steht das Ziel fest, im Browser ist es umschaltbar.
   const [platform, setPlatform] = useState(
     detectPlatform() === 'app' ? 'app' : stored.platform ?? 'web',
   )
   const [device, setDevice] = useState(detectDevice)
   const [os] = useState(detectOs)
-  const [buildBanner, setBuildBanner] = useState(stored.buildBanner ?? true)
-  const [cookieBanner, setCookieBanner] = useState(stored.cookieBanner ?? false)
+
+  /**
+   * Der Dunkelmodus gilt für Website und App. „Automatisch" folgt dem
+   * Betriebssystem — damit ist er auch dann richtig eingestellt, wenn man
+   * ihn nirgends anfasst.
+   */
   const [theme, setTheme] = useState(stored.theme ?? 'auto')
   const [systemDark, setSystemDark] = useState(systemPrefersDark)
+  const darkMode = theme === 'dark' || (theme === 'auto' && systemDark)
 
-  // In der App gibt es keinen Gastmodus: Wer nicht angemeldet ist, landet auf
-  // der Anmeldung. Die App startet deshalb abgemeldet, die Website als Gast.
-  const [session, setSession] = useState(stored.session ?? 'guest')
+  const [pureMap, setPureMap] = useState(stored.pureMap ?? false)
+  const [position, setPosition] = useState(stored.position ?? HOME_POSITION)
+  const [radiusKm, setRadiusKm] = useState(stored.radiusKm ?? DEFAULT_RADIUS)
+
+  const [buildBanner, setBuildBanner] = useState(stored.buildBanner ?? true)
+  const [cookieBanner, setCookieBanner] = useState(stored.cookieBanner ?? false)
+  const [state, setState] = useState('filled')
 
   useEffect(() => {
-    writeStore({ state, platform, session, theme, buildBanner, cookieBanner })
-  }, [state, platform, session, theme, buildBanner, cookieBanner])
+    writeStore({ platform, theme, pureMap, position, radiusKm, buildBanner, cookieBanner })
+  }, [platform, theme, pureMap, position, radiusKm, buildBanner, cookieBanner])
 
-  // Breite mitverfolgen, damit sich das Design-Panel beim Drehen richtig verhält
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 1023px)')
     const onChange = () => setDevice(detectDevice())
@@ -111,49 +105,26 @@ export function DesignStateProvider({ children }) {
     return () => mq.removeEventListener('change', onChange)
   }, [])
 
-  /**
-   * Der Dunkelmodus gehört zur App. Die Website bleibt hell — so steht es
-   * im Farbteil der Spezifikation, und dort wäre er auch nicht angefragt.
-   */
-  const darkMode = platform === 'app' && (theme === 'dark' || (theme === 'auto' && systemDark))
-
   useEffect(() => {
     document.documentElement.dataset.theme = darkMode ? 'dark' : 'light'
+    const meta = document.querySelector('meta[name="theme-color"]')
+    if (meta) meta.setAttribute('content', darkMode ? '#131316' : '#FFFFFF')
   }, [darkMode])
 
   const value = useMemo(
     () => ({
-      state,
-      setState,
-      isEmpty: state === 'empty',
-      isLoading: state === 'loading',
-      isFilled: state === 'filled',
-
-      platform,
-      setPlatform,
-      isApp: platform === 'app',
-      isWeb: platform === 'web',
-
-      device,
-      setDevice,
-      isMobile: device === 'mobile',
-      isDesktop: device === 'desktop',
-      os,
-
-      session,
-      setSession,
-      loggedIn: session === 'user',
-
-      theme,
-      setTheme,
-      darkMode,
-
-      buildBanner,
-      setBuildBanner,
-      cookieBanner,
-      setCookieBanner,
+      platform, setPlatform, isApp: platform === 'app', isWeb: platform === 'web',
+      device, setDevice, isMobile: device === 'mobile', isDesktop: device === 'desktop', os,
+      theme, setTheme, darkMode,
+      pureMap, setPureMap,
+      position, setPosition,
+      radiusKm, setRadiusKm,
+      buildBanner, setBuildBanner,
+      cookieBanner, setCookieBanner,
+      state, setState,
+      isEmpty: state === 'empty', isLoading: state === 'loading', isFilled: state === 'filled',
     }),
-    [state, platform, device, os, session, theme, darkMode, buildBanner, cookieBanner],
+    [platform, device, os, theme, darkMode, pureMap, position, radiusKm, buildBanner, cookieBanner, state],
   )
 
   return <DesignStateContext.Provider value={value}>{children}</DesignStateContext.Provider>
@@ -166,21 +137,23 @@ export function useDesignState() {
 }
 
 /**
- * Kleine Hilfe: gibt je nach Zustand eine der drei Varianten zurück.
+ * Legt den Abnahme-Schalter über ein Abfrageergebnis. Im Normalbetrieb
+ * („gefüllt") reicht das Ergebnis unverändert durch.
  *
- *   <Variant loading={<Skelett />} empty={<LeererZustand />}>
- *     …gefüllter Inhalt…
- *   </Variant>
+ * Fällt in Schritt 2 zusammen mit dem Design-Panel weg.
  */
-export function Variant({ loading, empty, children }) {
-  const { isLoading, isEmpty } = useDesignState()
-  if (isLoading && loading !== undefined) return loading
-  if (isEmpty && empty !== undefined) return empty
-  return children
+export function useVariant(result) {
+  const { state } = useDesignState()
+  if (state === 'loading') return { ...result, data: Array.isArray(result.data) ? [] : null, loading: true }
+  if (state === 'empty') {
+    const empty = Array.isArray(result.data) ? [] : result.data && typeof result.data === 'object' ? { ...result.data, items: [] } : null
+    return { ...result, data: empty, loading: false }
+  }
+  return result
 }
 
-/** Liefert die Liste leer, wenn der Zustand „leer“ aktiv ist. */
-export function useData(list) {
-  const { isEmpty } = useDesignState()
-  return isEmpty ? [] : list
+/** Kurzform, wenn nur die Liste gebraucht wird. */
+export function useListQuery(result) {
+  const { data, loading, refreshing, reload } = useVariant(result)
+  return { items: data ?? [], loading, refreshing, reload }
 }

@@ -1,16 +1,41 @@
+import { useState } from 'react'
 import { ChevronRight, Compass, Info, MapPin, Navigation, UtensilsCrossed } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button, IconButton, Skeleton, VideoTile } from '../../components/ui'
 import { Page } from '../../components/layout'
-import { useDesignState } from '../../lib/design-state'
-import { places } from '../../mock/places'
-import { videos } from '../../mock/content'
+import { useDesignState, useVariant } from '../../lib/design-state'
+import { api, toMapPercent, useQuery } from '../../lib/store'
 import { t } from '../../i18n'
 
 /** C.1 — Startseite */
 export default function Home() {
-  const { isLoading, isEmpty } = useDesignState()
-  const tiles = isEmpty ? [] : [...videos, ...videos].slice(0, 6)
+  const { position, radiusKm, setPosition } = useDesignState()
+  const navigate = useNavigate()
+  const [where, setWhere] = useState('')
+
+  const { data: feed, loading: feedLoading } = useVariant(
+    useQuery(() => api.videos.feed({ position, radiusKm: Math.max(radiusKm, 10) }), [position, radiusKm], {
+      initial: { items: [] },
+    }),
+  )
+  const { data: nearby, loading: mapLoading } = useVariant(
+    useQuery(() => api.places.nearby(position, 12), [position], { initial: [] }),
+  )
+
+  const isLoading = feedLoading
+  const tiles = (feed?.items ?? []).slice(0, 8)
+  const markers = nearby ?? []
+
+  /* Ortssuche: Treffer verschiebt den Kartenmittelpunkt, sonst zur Suche. */
+  const goToPlace = async (event) => {
+    event.preventDefault()
+    const value = where.trim()
+    if (!value) return navigate('/karte')
+    const result = await api.search.run(value, { position })
+    const hit = result.locations[0]
+    if (hit) setPosition({ lat: hit.lat, lng: hit.lng, label: hit.name })
+    return navigate(hit ? '/karte' : `/suche?q=${encodeURIComponent(value)}`)
+  }
 
   return (
     <Page title={t('home.title')}>
@@ -19,21 +44,29 @@ export default function Home() {
         <h1 className="t-display">{t('home.title')}</h1>
         <p className="t-body c-secondary" style={{ marginTop: 'var(--sp-3)' }}>{t('home.subtitle')}</p>
 
-        <div className="row-wrap" style={{ marginTop: 'var(--sp-6)', gap: 'var(--sp-2)' }}>
+        <form className="row-wrap" style={{ marginTop: 'var(--sp-6)', gap: 'var(--sp-2)' }} onSubmit={goToPlace}>
           <div className="input-affix grow" style={{ minWidth: 260 }}>
             <span className="affix"><MapPin size={18} /></span>
-            <input className="input" placeholder={t('home.locationPlaceholder')} aria-label={t('home.locationPlaceholder')} />
-            <Button variant="quiet" size="sm" icon={Navigation}>{t('home.useLocation')}</Button>
+            <input
+              className="input"
+              placeholder={t('home.locationPlaceholder')}
+              aria-label={t('home.locationPlaceholder')}
+              value={where}
+              onChange={(e) => setWhere(e.target.value)}
+            />
+            <Button variant="quiet" size="sm" icon={Navigation} onClick={() => setWhere(position.label ?? '')}>
+              {t('home.useLocation')}
+            </Button>
           </div>
-          <Button variant="primary" to="/karte">{t('home.go')}</Button>
-        </div>
+          <Button type="submit" variant="primary">{t('home.go')}</Button>
+        </form>
       </section>
 
       {/* Abschnitt 2 — Videovorschau */}
       <section style={{ paddingBottom: 'var(--sp-12)' }}>
         <div className="row-between" style={{ marginBottom: 'var(--sp-4)' }}>
           <h2 className="t-h2">{t('home.popularTitle')}</h2>
-          <IconButton icon={ChevronRight} label={t('home.popularNext')} />
+          <IconButton icon={ChevronRight} label={t('home.popularNext')} to="/feed" />
         </div>
 
         {isLoading ? (
@@ -48,17 +81,15 @@ export default function Home() {
           </div>
         ) : (
           <div className="video-rail">
-            {tiles.map((v, i) => {
-              const place = places.find((p) => p.id === v.placeId) ?? places[0]
-              return (
-                <VideoTile
-                  key={`${v.id}-${i}`}
-                  to={`/v/${v.id}`}
-                  title={place.name}
-                  subtitle={place.distance}
-                />
-              )
-            })}
+            {tiles.map((v) => (
+              <VideoTile
+                key={v.id}
+                to={`/v/${v.id}`}
+                title={v.place?.name}
+                subtitle={v.place?.distance}
+                views={v.views.toLocaleString('de-DE')}
+              />
+            ))}
           </div>
         )}
       </section>
@@ -67,13 +98,17 @@ export default function Home() {
       <section style={{ paddingBottom: 'var(--sp-12)' }}>
         <h2 className="t-h2" style={{ marginBottom: 'var(--sp-4)' }}>{t('home.mapTitle')}</h2>
         <div className="map-canvas" style={{ height: 400, borderRadius: 'var(--r-card)', overflow: 'hidden' }}>
-          {!isLoading && places.map((p) => (
-            <span key={p.id} className="marker" style={{ top: `${p.lat}%`, left: `${p.lng}%` }}>
-              <span className={p.videoCount > 0 ? 'marker-video' : 'marker-dot'}>
-                <UtensilsCrossed size={p.videoCount > 0 ? 16 : 11} />
+          {!mapLoading && markers.map((p) => {
+            const { top, left } = toMapPercent(p, position, 14)
+            if (top < 0 || top > 100 || left < 0 || left > 100) return null
+            return (
+              <span key={p.id} className="marker" style={{ top: `${top}%`, left: `${left}%` }}>
+                <span className={p.videoCount > 0 ? 'marker-video' : 'marker-dot'}>
+                  <UtensilsCrossed size={p.videoCount > 0 ? 16 : 11} />
+                </span>
               </span>
-            </span>
-          ))}
+            )
+          })}
           <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
             <Button variant="primary" to="/karte">{t('home.openMap')}</Button>
           </div>

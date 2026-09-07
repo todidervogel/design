@@ -1,15 +1,16 @@
 import { AdminShell, AdminTable } from './AdminShell'
 import { Kpi } from '../../components/layout'
 import { Skeleton } from '../../components/ui'
-import { useDesignState } from '../../lib/design-state'
-import { adminEvents, kpis } from '../../mock/content'
+import { useVariant } from '../../lib/design-state'
+import { api, useQuery } from '../../lib/store'
 import { t } from '../../i18n'
 
 /** G.2 — Admin-Übersicht */
 export default function AdminOverview() {
-  const { isEmpty, isLoading } = useDesignState()
-  const k = kpis.admin
-  const rows = isEmpty ? [] : adminEvents
+  const { data, loading } = useVariant(useQuery(() => api.admin.overview(), []))
+  const k = data ?? { queue: 0, reports: 0, claims: 0, places: 0, users: 0, videos: 0, log: [] }
+  const isLoading = loading
+  const rows = k.log ?? []
 
   const cards = [
     ['queue', k.queue], ['reports', k.reports], ['claims', k.claims],
@@ -34,10 +35,10 @@ export default function AdminOverview() {
         rows={rows}
         empty={<p className="t-small c-secondary">{t('admin.reports.emptyTitle')}</p>}
         renderRow={(e) => (
-          <tr key={e.time + e.event}>
-            <td style={{ whiteSpace: 'nowrap' }}>{e.time}</td>
-            <td>{e.event}</td>
-            <td className="c-secondary">{e.actor}</td>
+          <tr key={e.id}>
+            <td style={{ whiteSpace: 'nowrap' }}>{e.at.replace('T', ' ').slice(0, 16)}</td>
+            <td>{e.action} · {e.object}</td>
+            <td className="c-secondary">{e.admin}</td>
           </tr>
         )}
       />

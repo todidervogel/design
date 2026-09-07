@@ -3,13 +3,17 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Statischer Design-Prototyp: alle Screens, Felder und Texte",
+  "description": "Website und App in einer Codebasis — Entwurf und MVP-Logik",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "build:app": "VITE_BASE=./ vite build",
-    "sync:android": "npm run build:app && cap sync android"
+    "sync:android": "npm run build:app && cap sync android",
+    "build:test": "VITE_LATENCY=400 vite build",
+    "pruefen:i18n": "node tools/pruefung/i18n-check.mjs",
+    "pruefen:routen": "node tools/pruefung/routen-sweep.mjs",
+    "pruefen:verhalten": "node tools/pruefung/verhalten.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^6.2.2",
@@ -22,6 +26,7 @@
   "devDependencies": {
     "@capacitor/cli": "^6.2.2",
     "@vitejs/plugin-react": "^4.3.1",
+    "playwright": "^1.63.0",
     "vite": "^5.4.8"
   }
 }

@@ -4,18 +4,32 @@ import {
   Badge, Button, Card, EmptyState, Field, Input, Modal, ModalActions, Notice, Select, useToast,
 } from '../../components/ui'
 import { AdminShell, AdminTable } from './AdminShell'
-import { useDesignState } from '../../lib/design-state'
-import { adminInvites } from '../../mock/content'
+import { useVariant } from '../../lib/design-state'
+import { api, useQuery } from '../../lib/store'
+import { rules, useForm } from '../../lib/form'
 import { t } from '../../i18n'
 
 const TONE = { sent: 'default', opened: 'accent', activated: 'success', bounced: 'danger', declined: 'warning' }
 
 /** G.6 — Admin-Einladungen */
 export default function AdminInvites() {
-  const { isEmpty } = useDesignState()
   const [open, setOpen] = useState(false)
   const toast = useToast()
-  const rows = isEmpty ? [] : adminInvites
+
+  const { data } = useVariant(useQuery(() => api.admin.invites(), [], { initial: [] }))
+  const { data: places } = useQuery(() => api.admin.places(), [], { initial: [] })
+  const rows = data ?? []
+
+  const form = useForm({
+    initial: { placeId: '', email: '', sender: 'Ana vom Team' },
+    schema: { email: [rules.required(), rules.email()] },
+    onSubmit: async (values) => {
+      await api.admin.createInvite(values.placeId || null, values.email.trim())
+      setOpen(false)
+      toast(t('common.saved'))
+      return { ok: true }
+    },
+  })
 
   return (
     <AdminShell title={t('admin.invites.title')}>
@@ -33,11 +47,15 @@ export default function AdminInvites() {
         empty={<EmptyState icon={Mail} title={t('admin.reports.emptyTitle')} />}
         renderRow={(i) => (
           <tr key={i.id}>
-            <td style={{ fontWeight: 600 }}>{i.place}</td>
+            <td style={{ fontWeight: 600 }}>{i.placeName ?? '—'}</td>
             <td className="c-secondary">{i.email}</td>
             <td style={{ whiteSpace: 'nowrap' }}>{i.sentAt}</td>
             <td><Badge tone={TONE[i.status]}>{t(`admin.invites.status.${i.status}`)}</Badge></td>
-            <td><Button variant="quiet" size="sm" onClick={() => toast(t('toast.noAction'), 'info')}>{t('admin.invites.resend')}</Button></td>
+            <td>
+              <Button variant="quiet" size="sm" onClick={async () => { await api.admin.resendInvite(i.id); toast(t('common.saved')) }}>
+                {t('admin.invites.resend')}
+              </Button>
+            </td>
           </tr>
         )}
       />
@@ -49,7 +67,7 @@ export default function AdminInvites() {
         title={t('admin.invites.dialogTitle')}
         actions={
           <ModalActions onCancel={() => setOpen(false)}>
-            <Button variant="primary" onClick={() => { setOpen(false); toast(t('toast.noAction'), 'info') }}>
+            <Button variant="primary" loading={form.submitting} onClick={form.handleSubmit}>
               {t('admin.invites.sendNow')}
             </Button>
           </ModalActions>
@@ -57,19 +75,24 @@ export default function AdminInvites() {
       >
         <div className="stack-4">
           <div className="row" style={{ gap: 'var(--sp-3)', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-            <Field label={t('admin.invites.filterCity')} className="grow">
-              {(id) => <Input id={id} defaultValue="Berlin" />}
+            <Field label={t('admin.invites.cols.place')} className="grow">
+              {(id) => (
+                <Select
+                  id={id}
+                  placeholder="—"
+                  options={(places ?? []).map((p) => ({ value: p.id, label: `${p.name} · ${p.city}` }))}
+                  value={form.values.placeId}
+                  onChange={(e) => form.setValue('placeId', e.target.value)}
+                />
+              )}
             </Field>
-            <Field label={t('admin.invites.filterCategory')} className="grow">
-              {(id) => <Select id={id} placeholder="—" options={['restaurant', 'cafe', 'bar'].map((c) => ({ value: c, label: t(`categories.${c}`) }))} />}
-            </Field>
-            <Field label={t('admin.invites.filterCount')} className="grow">
-              {(id) => <Input id={id} type="number" defaultValue={50} />}
+            <Field label={t('admin.invites.cols.email')} className="grow" error={form.error('email')}>
+              {(id) => <Input id={id} type="email" placeholder={t('auth.register.emailPlaceholder')} {...form.field('email')} />}
             </Field>
           </div>
 
           <Field label={t('admin.invites.senderLabel')}>
-            {(id) => <Input id={id} defaultValue="Ana vom Team" />}
+            {(id) => <Input id={id} {...form.field('sender')} />}
           </Field>
 
           <div>

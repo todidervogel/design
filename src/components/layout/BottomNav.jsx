@@ -6,18 +6,17 @@ import { t } from '../../i18n'
 /**
  * TEIL B.3 — Untere Navigationsleiste, nur auf schmalen Bildschirmen.
  *
- * Unterschied zwischen den beiden Zielen:
- *
  *   App     fünf Punkte, „Aufnehmen“ mittig und hervorgehoben
  *   Website vier Punkte ohne „Aufnehmen“ — Videos aufnehmen gehört zur App,
  *           nicht auf eine Internetseite
  *
  * Am Rechner erscheint die Leiste gar nicht; dort führt die Kopfleiste (B.1/B.2).
+ * In der reinen Kartenansicht verschwindet sie ebenfalls.
  */
 export function BottomNav({ dark }) {
-  const { isApp, isDesktop } = useDesignState()
+  const { isApp, isDesktop, pureMap } = useDesignState()
 
-  if (isDesktop) return null
+  if (isDesktop || pureMap) return null
 
   const active = ({ isActive }) => (isActive ? 'is-active' : '')
 

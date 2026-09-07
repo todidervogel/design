@@ -13,6 +13,8 @@ export const routeGroups = [
       { path: '/suche', label: 'Suchergebnisse', spec: 'C.5' },
       { path: '/g/trattoria-bella', label: 'Gastro-Seite', spec: 'C.3', pattern: '/g/[slug]' },
       { path: '/g/trattoria-bella?src=qr', label: 'Gastro-Seite über QR-Code', spec: 'D.6', pattern: '/g/[slug]?src=qr' },
+      { path: '/g/trattoria-bella/speisekarte', label: 'Speisekarte', spec: 'C.8', pattern: '/g/[slug]/speisekarte' },
+      { path: '/g/gruenkern/speisekarte', label: 'Speisekarte (vegan)', spec: 'C.8', pattern: '/g/[slug]/speisekarte' },
       { path: '/v/v1', label: 'Videodetail', spec: 'C.7', pattern: '/v/[id]' },
       { path: '/p/lisa_k', label: 'Fremdes Profil', spec: 'E.8', pattern: '/p/[username]' },
       { path: '/fuer-gastronomen', label: 'Landingpage Gastro', spec: 'F.13' },

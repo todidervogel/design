@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
-import { Lock, Play } from 'lucide-react'
-import { Avatar } from './Primitives'
+import { Clock, Lock, Play } from 'lucide-react'
+import { Avatar, Badge } from './Primitives'
+import { t } from '../../i18n'
 
 /**
  * Videokachel — Hochformat 9:16.
@@ -13,6 +14,7 @@ export function VideoTile({
   views,
   author,
   locked,
+  pending,
   badge,
   overlayTop,
   width,
@@ -20,7 +22,7 @@ export function VideoTile({
   return (
     <Link to={to} className="video-tile" style={width ? { width } : undefined}>
       <span className="video-tile-top">
-        {badge ?? <span />}
+        {badge ?? (pending ? <Badge tone="dark" icon={Clock}>{t('gastro.videos.statusPending')}</Badge> : <span />)}
         {locked && <Lock size={14} color="#fff" />}
         {author && <Avatar name={author} size={24} />}
         {overlayTop}

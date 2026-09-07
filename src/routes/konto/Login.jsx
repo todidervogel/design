@@ -1,31 +1,60 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Notice } from '../../components/ui'
 import { Button, Field, Input, PasswordInput } from '../../components/ui'
 import { CenteredPage } from '../../components/layout'
-import { useDesignState } from '../../lib/design-state'
+import { useSession } from '../../lib/session'
+import { rules, useForm } from '../../lib/form'
 import { t } from '../../i18n'
 
 /** D.3 — Anmelden */
 export default function Login() {
-  const { setSession } = useDesignState()
+  const { login } = useSession()
+  const navigate = useNavigate()
+  const [hintOpen] = useState(true)
+
+  const form = useForm({
+    initial: { identifier: '', password: '' },
+    schema: {
+      identifier: [rules.required()],
+      password: [rules.required()],
+    },
+    onSubmit: (values) => {
+      const result = login(values.identifier, values.password)
+      if (!result.ok) return { ok: false, error: result.error }
+
+      /* Jede Rolle landet dort, wo sie hingehört. */
+      if (result.mustChangePassword) navigate('/gastro/willkommen', { replace: true })
+      else if (result.user.role === 'admin') navigate('/admin', { replace: true })
+      else if (result.user.role === 'gastro') navigate('/gastro', { replace: true })
+      else navigate('/feed', { replace: true })
+      return { ok: true }
+    },
+  })
 
   return (
     <CenteredPage title={t('auth.login.title')}>
       <h1 className="t-h1">{t('auth.login.title')}</h1>
 
-      <div className="stack-4" style={{ marginTop: 'var(--sp-6)' }}>
-        <Field label={t('auth.login.identifier')} required>
-          {(id) => <Input id={id} autoComplete="username" />}
+      <form className="stack-4" style={{ marginTop: 'var(--sp-6)' }} onSubmit={form.handleSubmit} noValidate>
+        {form.formError && <Notice tone="danger">{form.formError}</Notice>}
+
+        <Field label={t('auth.login.identifier')} required error={form.error('identifier')}>
+          {(id) => <Input id={id} autoComplete="username" {...form.field('identifier')} />}
         </Field>
 
-        <Field label={t('auth.login.password')} required>
-          {(id) => <PasswordInput id={id} autoComplete="current-password" />}
+        <Field label={t('auth.login.password')} required error={form.error('password')}>
+          {(id) => <PasswordInput id={id} autoComplete="current-password" {...form.field('password')} />}
         </Field>
 
-        <div style={{ textAlign: 'right', marginTop: 'calc(var(--sp-4) * -1 + var(--sp-1))' }}>
-          <Link to="/passwort-vergessen" className="btn btn-quiet btn-sm">{t('auth.login.forgot')}</Link>
-        </div>
+        {/* Der Link steht unter dem Feld, nicht daneben — sonst klebt er am Label. */}
+        <p className="login-forgot">
+          <Link to="/passwort-vergessen" className="c-accent t-small">{t('auth.login.forgot')}</Link>
+        </p>
 
-        <Button variant="primary" full to="/feed" onClick={() => setSession('user')}>{t('auth.login.submit')}</Button>
+        <Button type="submit" variant="primary" full loading={form.submitting}>
+          {t('auth.login.submit')}
+        </Button>
 
         <div className="row" style={{ gap: 'var(--sp-3)' }}>
           <hr className="divider grow" />
@@ -38,7 +67,9 @@ export default function Login() {
         <p className="t-small c-secondary" style={{ textAlign: 'center' }}>
           {t('auth.login.noAccount')} <Link to="/registrieren" className="c-accent">{t('auth.login.registerLink')}</Link>
         </p>
-      </div>
+
+        {hintOpen && <p className="t-tiny c-tertiary" style={{ textAlign: 'center' }}>{t('auth.demoHint')}</p>}
+      </form>
     </CenteredPage>
   )
 }

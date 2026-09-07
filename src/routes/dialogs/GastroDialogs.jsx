@@ -4,15 +4,38 @@ import {
   Button, Checkbox, Dropzone, Field, Input, Modal, ModalActions, Notice, Radio,
   Select, Textarea, charCount, useToast,
 } from '../../components/ui'
+import { api } from '../../lib/store'
+import { useSession } from '../../lib/session'
 import { t } from '../../i18n'
 
 const REPORT_REASONS = ['neverThere', 'falseClaims', 'hate', 'mixup', 'blackmail', 'other']
 
 /** F.8 — Dialog „Bewertung melden“ (Gastro) */
-export function ReportReviewDialog({ open, onClose }) {
+export function ReportReviewDialog({ open, onClose, target }) {
   const [reason, setReason] = useState('neverThere')
   const [text, setText] = useState('')
+  const [busy, setBusy] = useState(false)
+  const { userId } = useSession()
   const toast = useToast()
+
+  /**
+   * Der BGH verlangt von Bewertungsportalen eine Prüfpflicht bei
+   * substantiiertem Widerspruch (Konzept 10). Deshalb landet die
+   * Beanstandung als Meldung bei der Moderation, nicht im Nichts.
+   */
+  const submit = async () => {
+    if (!target) return
+    setBusy(true)
+    await api.reports.create({
+      targetType: 'review', targetId: target.id, label: target.label,
+      reason: 'fake', note: `${t(`gastro.reportReview.reasons.${reason}`)} — ${text}`,
+      reporterId: userId,
+    })
+    setBusy(false)
+    setText('')
+    onClose?.()
+    toast(t('toast.reportReceived'))
+  }
 
   return (
     <Modal
@@ -22,7 +45,7 @@ export function ReportReviewDialog({ open, onClose }) {
       description={t('gastro.reportReview.text')}
       actions={
         <ModalActions onCancel={onClose}>
-          <Button variant="primary" onClick={() => { onClose?.(); toast(t('toast.reportReceived')) }}>
+          <Button variant="primary" loading={busy} disabled={!text.trim()} onClick={submit}>
             {t('gastro.reportReview.submit')}
           </Button>
         </ModalActions>
@@ -58,11 +81,22 @@ export function ReportReviewDialog({ open, onClose }) {
 }
 
 /** F.12 — Dialog „Betrieb als geschlossen melden“ */
-export function CloseBusinessDialog({ open, onClose }) {
+export function CloseBusinessDialog({ open, onClose, place }) {
   const [mode, setMode] = useState('permanent')
   const [reason, setReason] = useState('')
   const [confirmed, setConfirmed] = useState(false)
+  const [busy, setBusy] = useState(false)
   const toast = useToast()
+
+  /* Dauerhafte Schließung startet die Zwölf-Monats-Frist (Konzept 8.7). */
+  const submit = async () => {
+    if (!place) return
+    setBusy(true)
+    await api.places.setStatus(place.id, mode === 'permanent' ? 'closing' : 'active')
+    setBusy(false)
+    onClose?.()
+    toast(t('common.saved'))
+  }
 
   return (
     <Modal
@@ -71,7 +105,7 @@ export function CloseBusinessDialog({ open, onClose }) {
       title={t('gastro.close.title')}
       actions={
         <ModalActions onCancel={onClose}>
-          <Button variant="danger" disabled={!confirmed} onClick={() => { onClose?.(); toast(t('toast.noAction'), 'info') }}>
+          <Button variant="danger" disabled={!confirmed} loading={busy} onClick={submit}>
             {t('gastro.close.submit')}
           </Button>
         </ModalActions>

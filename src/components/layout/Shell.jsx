@@ -39,15 +39,19 @@ export function Page({ title, children, footer = true, bottomNav = true, headerS
  * Seite ohne eigenen Container — für Karte, Konsolen und andere
  * Screens, die die volle Breite selbst verwalten.
  */
-export function BarePage({ title, children, bottomNav = true, headerSuffix, minimalHeader }) {
+export function BarePage({ title, children, bottomNav = true, headerSuffix, minimalHeader, chrome = true }) {
   useScreen(title)
+  const { pureMap } = useDesignState()
+  /* `chrome={false}` blendet Banner und Kopfleiste aus — die reine Kartenansicht. */
+  const bare = chrome === false || pureMap
+
   return (
     <div className="app-shell">
-      <BuildBanner />
-      <Header suffix={headerSuffix} minimal={minimalHeader} />
-      <main className={`app-main ${bottomNav ? 'has-bottom-nav' : ''}`}>{children}</main>
+      {!bare && <BuildBanner />}
+      {!bare && <Header suffix={headerSuffix} minimal={minimalHeader} />}
+      <main className={`app-main ${bottomNav && !bare ? 'has-bottom-nav' : ''}`}>{children}</main>
       {bottomNav && <BottomNav />}
-      <CookieBanner />
+      {!bare && <CookieBanner />}
     </div>
   )
 }

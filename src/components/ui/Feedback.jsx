@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Info, LoaderCircle, X } from 'lucide-react'
 import { Button, IconButton } from './Button'
 import { t } from '../../i18n'
 
@@ -63,6 +63,31 @@ export function SkeletonRow() {
 /** Skelett in Form einer Videokachel. */
 export function SkeletonTile() {
   return <Skeleton h={0} style={{ aspectRatio: '9 / 16', height: 'auto' }} radius="var(--r-card)" />
+}
+
+/**
+ * Ladekreisel.
+ *
+ * Skelettflächen bleiben die erste Wahl (B.9) — sie zeigen, wie die Seite
+ * gleich aussieht. Wo es nichts zu skizzieren gibt (ein laufender Button,
+ * ein Nachladen unter bestehendem Inhalt), ist der Kreisel richtig.
+ */
+export function Spinner({ size = 20, label, inline, className = '' }) {
+  return (
+    <span className={`spin-badge ${inline ? 'spin-badge-inline' : ''} ${className}`} role="status" aria-live="polite">
+      <LoaderCircle size={size} aria-hidden="true" />
+      <span className={label ? 't-small c-secondary' : 'sr-only'}>{label ?? t('common.loadingLabel')}</span>
+    </span>
+  )
+}
+
+/** Ganzflächiger Ladezustand, wenn eine Seite noch gar nichts zeigen kann. */
+export function LoadingBlock({ label, minHeight = 200 }) {
+  return (
+    <div className="loading-block" style={{ minHeight }}>
+      <Spinner size={28} label={label ?? t('common.loading')} />
+    </div>
+  )
 }
 
 /* ==========================================================================

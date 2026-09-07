@@ -339,3 +339,69 @@
 .list-row:hover { background: var(--bg-light-alt); }
 .list-row-static { cursor: default; }
 .list-row-static:hover { background: transparent; }
+
+/* ==========================================================================
+   Ladekreisel neben oder unter Inhalten
+   ========================================================================== */
+.spin-badge {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  color: var(--text-secondary);
+}
+.spin-badge svg { animation: spin 1s linear infinite; }
+.spin-badge-inline { vertical-align: middle; }
+
+.loading-block {
+  display: grid; place-items: center; gap: var(--sp-3);
+  padding: var(--sp-12) var(--sp-4);
+}
+
+/* Stiller Nachlade-Hinweis über einer Liste, die schon Inhalt zeigt */
+.refresh-bar {
+  display: flex; justify-content: center; padding: var(--sp-2) 0;
+}
+
+/* ==========================================================================
+   Angebotsarten — was gibt es hier zu essen und zu trinken?
+   ========================================================================== */
+.serving-row {
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px;
+}
+.serving-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: var(--r-pill);
+  background: var(--bg-light-alt); border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 12px; line-height: 18px; white-space: nowrap;
+}
+.serving-sm .serving-chip { padding: 3px; }
+.serving-chip svg { flex: none; }
+.serving-strong {
+  background: var(--tint-info-bg); border-color: transparent; color: var(--tint-info-fg);
+  font-weight: 600;
+}
+.serving-rest { font-variant-numeric: tabular-nums; }
+
+/* ==========================================================================
+   Reine Kartenansicht (App): alles weg außer der Karte
+   ========================================================================== */
+.map-pure-exit {
+  position: fixed; top: calc(var(--sp-3) + env(safe-area-inset-top, 0px));
+  left: var(--sp-3); z-index: 40;
+}
+body.map-pure { overflow: hidden; }
+
+/* Der „Passwort vergessen?"-Link gehört unter das Feld, mit eigenem Abstand.
+   Vorher hing er über einem negativen Rand direkt am Label. */
+.login-forgot {
+  margin-top: calc(var(--sp-4) * -1 + var(--sp-2));
+  text-align: right;
+}
+.login-forgot a { text-decoration: none; }
+.login-forgot a:hover { text-decoration: underline; }
+
+/* Angebotszeile in der Trefferliste: eng am Namen, ohne Umbruch-Chaos */
+.place-serving { margin: 2px 0 2px; }
+.btn-icon.is-active { color: var(--accent); }
+
+/* Auslöser blinkt, solange „aufgenommen" wird */
+.capture-shutter.is-recording { background: var(--danger); animation: pulse 1.2s ease-in-out infinite; }

@@ -50,7 +50,28 @@
     "german": "Deutsch",
     "english": "Englisch",
     "characters": "{{count}}/{{max}} Zeichen",
-    "requiredMark": "Pflichtfeld"
+    "requiredMark": "Pflichtfeld",
+    "retry": "Erneut versuchen",
+    "loadingLabel": "Wird geladen",
+    "empty": "—",
+    "add": "Hinzufügen",
+    "remove": "Entfernen",
+    "confirm": "Bestätigen",
+    "done": "Fertig",
+    "saving": "Wird gespeichert …",
+    "saved": "Gespeichert",
+    "of": "von",
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten",
+    "copy": "Kopieren",
+    "print": "Drucken",
+    "download": "Herunterladen",
+    "clear": "Leeren",
+    "noResults": "Keine Treffer",
+    "servingLabel": "Angebot",
+    "show": "Anzeigen",
+    "hide": "Ausblenden",
+    "removed": "Entfernt"
   },
   "header": {
     "searchPlaceholder": "Restaurant, Gericht oder Ort suchen",
@@ -143,7 +164,8 @@
       "fr": "Freitag",
       "sa": "Samstag",
       "so": "Sonntag"
-    }
+    },
+    "today": "heute"
   },
   "home": {
     "title": "Sieh, was es zu essen gibt.",
@@ -186,7 +208,17 @@
     "save": "Speichern",
     "emptyTitle": "Nichts gefunden",
     "emptyText": "Versuch es mit einem größeren Umkreis oder anderen Filtern.",
-    "emptyCta": "Umkreis auf 25 km erweitern"
+    "emptyCta": "Umkreis auf 25 km erweitern",
+    "servingMenuTitle": "Angebot",
+    "pureMode": "Nur Karte",
+    "pureModeOn": "Karte im Vollbild",
+    "pureModeOff": "Leisten wieder einblenden",
+    "pureHint": "Blendet Kopf- und Fußleiste aus.",
+    "listSheet": "Trefferliste",
+    "resultCountOne": "1 Betrieb",
+    "positionLabel": "Standort: {{name}}",
+    "filterCount": "{{count}} Filter aktiv",
+    "resetFilters": "Filter zurücksetzen"
   },
   "categories": {
     "restaurant": "Restaurant",
@@ -249,7 +281,16 @@
       "5": "Zu fünft",
       "6": "Zu sechst"
     },
-    "groupSizeMany": "Zu {{size}}"
+    "groupSizeMany": "Zu {{size}}",
+    "menuTab": "Speisekarte",
+    "fullMenu": "Ganze Speisekarte ansehen",
+    "menuCount": "{{count}} Gerichte auf der Karte",
+    "servingTitle": "Angebot",
+    "reportSent": "Danke, wir prüfen das.",
+    "closedReported": "Gäste haben gemeldet, dass dieser Betrieb dauerhaft geschlossen ist. Wir prüfen das gerade.",
+    "closingNotice": "Dieser Betrieb hat dauerhaft geschlossen.",
+    "notFoundTitle": "Betrieb nicht gefunden",
+    "notFoundText": "Diese Seite gibt es nicht mehr oder die Adresse stimmt nicht."
   },
   "features": {
     "barrierefrei": "Barrierefrei",
@@ -322,7 +363,11 @@
     "emptyTitle": "Hier ist noch nichts",
     "emptyText": "In deinem Umkreis wurden noch keine Videos hochgeladen.",
     "emptyCta": "Karte ansehen",
-    "emptyCtaSecondary": "Umkreis erweitern"
+    "emptyCtaSecondary": "Umkreis erweitern",
+    "widened": "Wenig Inhalte in deiner Nähe — wir zeigen dir einen größeren Umkreis.",
+    "liked": "Gemerkt",
+    "seen": "Schon gesehen",
+    "ofCount": "{{current}} von {{total}}"
   },
   "videoDetail": {
     "follow": "Folgen",
@@ -408,7 +453,18 @@
       "text": "Melde dich an, um zu liken, zu folgen und Inhalte zu speichern.",
       "login": "Anmelden",
       "register": "Konto erstellen"
-    }
+    },
+    "errors": {
+      "unknownAccount": "Zu dieser E-Mail oder diesem Benutzernamen gibt es kein Konto.",
+      "wrongPassword": "Das Passwort stimmt nicht.",
+      "blocked": "Dieses Konto ist gesperrt. Melde dich beim Support.",
+      "accountExists": "Diese E-Mail oder dieser Benutzername ist schon vergeben.",
+      "noPendingRegistration": "Es läuft gerade keine Registrierung. Fang bitte von vorn an.",
+      "wrongCode": "Der Code stimmt nicht."
+    },
+    "demoHint": "Testzugänge: max@beispiel.de · chef@trattoria-bella.de · ana@intern — Passwort steht im Design-Panel.",
+    "codeHint": "Im Test lautet der Code 123456.",
+    "loggedOut": "Du bist abgemeldet."
   },
   "upload": {
     "capture": {
@@ -494,7 +550,13 @@
       "doneText": "Dein Video wird geprüft und ist bald sichtbar. Das dauert meist unter 24 Stunden.",
       "doneProfile": "Zum Profil",
       "doneAgain": "Noch ein Video"
-    }
+    },
+    "steps": "Schritt {{current}} von {{total}}",
+    "missingVideo": "Bitte nimm zuerst ein Video auf oder wähle eines aus.",
+    "missingPlace": "Bitte wähle einen Betrieb.",
+    "published": "Dein Video liegt zur Prüfung bereit.",
+    "savedDraft": "Entwurf gespeichert.",
+    "reviewSkipped": "Ohne Bewertung wird dein Video seltener gezeigt."
   },
   "profile": {
     "counts": {
@@ -621,7 +683,13 @@
       "auto": "Automatisch",
       "light": "Hell",
       "dark": "Dunkel"
-    }
+    },
+    "appearanceAuto": "Automatisch",
+    "appearanceHintAll": "Gilt für Website und App. „Automatisch“ folgt deinem Gerät.",
+    "logoutConfirm": "Wirklich abmelden?",
+    "exportReady": "Deine Daten wurden heruntergeladen.",
+    "accountDeleted": "Dein Konto wurde gelöscht.",
+    "savedProfile": "Profil gespeichert."
   },
   "notifications": {
     "title": "Benachrichtigungen",
@@ -742,7 +810,10 @@
       "submit": "Hochladen",
       "emptyTitle": "Noch keine Videos",
       "emptyText": "Zeig deinen Gästen, was bei dir auf den Teller kommt.",
-      "emptyCta": "Erstes Video hochladen"
+      "emptyCta": "Erstes Video hochladen",
+      "statusPending": "In Prüfung",
+      "statusPublished": "Veröffentlicht",
+      "statusRejected": "Abgelehnt"
     },
     "menu": {
       "title": "Speisekarte",
@@ -773,7 +844,25 @@
         "hauptgerichte": "Hauptgerichte",
         "desserts": "Desserts",
         "getraenke": "Getränke"
-      }
+      },
+      "subtitle": "Was hier steht, sehen Gäste auf deiner Seite und auf der reinen Speisekarte.",
+      "viewPublic": "Als Gast ansehen",
+      "categoryName": "Name der Kategorie",
+      "categoryDescription": "Beschreibung (optional)",
+      "newCategory": "Neue Kategorie",
+      "deleteCategory": "Kategorie löschen",
+      "deleteCategoryConfirm": "Die Kategorie und alle {{count}} Gerichte darin werden gelöscht.",
+      "deleteDish": "Gericht löschen",
+      "dietLabel": "Kennzeichnung",
+      "spicyLabel": "Schärfe",
+      "availableLabel": "Heute verfügbar",
+      "popularLabel": "Als beliebt markieren",
+      "noteLabel": "Hinweis unter der Karte",
+      "notePlaceholder": "z. B. Alle Preise inkl. MwSt.",
+      "saved": "Speisekarte gespeichert.",
+      "dishAdded": "Gericht hinzugefügt.",
+      "dishRemoved": "Gericht gelöscht.",
+      "categoryAdded": "Kategorie angelegt."
     },
     "reviews": {
       "title": "Bewertungen",
@@ -839,7 +928,8 @@
         "closed": "Geschlossen",
         "reason": "Anlass (optional)"
       },
-      "sectionFeatures": "Merkmale"
+      "sectionFeatures": "Merkmale",
+      "servingTitle": "Angebot"
     },
     "qr": {
       "title": "QR-Codes",
@@ -859,7 +949,8 @@
       "textPlaceholder": "Wie war's? Bewerte uns bei {{app}}",
       "preview": "Vorschau",
       "downloadPdf": "Als PDF herunterladen",
-      "downloadPng": "PNG herunterladen"
+      "downloadPng": "PNG herunterladen",
+      "targetLabel": "Wohin soll der Code führen?"
     },
     "settings": {
       "title": "Einstellungen",
@@ -1286,10 +1377,23 @@
     "theme": "Darstellung",
     "themes": {
       "light": "Hell",
-      "dark": "Dunkel"
+      "dark": "Dunkel",
+      "auto": "Auto"
     },
     "guestInApp": "Die App kennt keinen Gastmodus — ohne Anmeldung erscheint die Anmeldeseite.",
-    "deviceHint": "Folgt der Fensterbreite — zum Prüfen das Fenster schmaler ziehen."
+    "deviceHint": "Folgt der Fensterbreite — zum Prüfen das Fenster schmaler ziehen.",
+    "role": "Rolle",
+    "roles": {
+      "guest": "Gast",
+      "user": "Nutzer",
+      "gastro": "Gastro",
+      "admin": "Admin"
+    },
+    "reset": "Daten zurücksetzen",
+    "resetHint": "Setzt alle Eingaben auf den Auslieferungsstand zurück.",
+    "resetDone": "Daten zurückgesetzt.",
+    "passwords": "Passwörter: Passwort123 · Gastro123 · Admin1234",
+    "pureMap": "Nur Karte"
   },
   "index": {
     "title": "Alle Screens",
@@ -1303,5 +1407,118 @@
       "legal": "Rechtliches",
       "errors": "Fehler"
     }
+  },
+  "validation": {
+    "required": "Bitte ausfüllen.",
+    "email": "Bitte gib eine gültige E-Mail-Adresse ein.",
+    "phone": "Bitte gib eine gültige Handynummer ein.",
+    "username": "3–20 Zeichen, nur Kleinbuchstaben, Zahlen, Punkt und Unterstrich.",
+    "minLength": "Mindestens {{count}} Zeichen.",
+    "maxLength": "Höchstens {{count}} Zeichen.",
+    "passwordShort": "Das Passwort braucht mindestens 8 Zeichen.",
+    "passwordMix": "Bitte mindestens einen Buchstaben und eine Ziffer verwenden.",
+    "mismatch": "Die beiden Eingaben stimmen nicht überein.",
+    "date": "Bitte gib ein gültiges Datum ein.",
+    "minAge": "Du musst mindestens {{years}} Jahre alt sein.",
+    "number": "Bitte gib eine Zahl ein.",
+    "min": "Mindestens {{min}}.",
+    "max": "Höchstens {{max}}.",
+    "url": "Bitte gib eine gültige Adresse ein."
+  },
+  "theme": {
+    "label": "Darstellung",
+    "auto": "Automatisch",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "toggle": "Darstellung wechseln",
+    "autoHint": "Folgt der Einstellung deines Geräts."
+  },
+  "serving": {
+    "label": "Angebot",
+    "hint": "Was gibt es hier?",
+    "onlyDrinks": "Nur Getränke",
+    "getraenke": "Getränke",
+    "fruehstueck": "Frühstück",
+    "vegan": "Vegan",
+    "vegetarisch": "Vegetarisch",
+    "fleisch": "Fleisch",
+    "fisch": "Fisch",
+    "meeresfruechte": "Meeresfrüchte",
+    "suess": "Süßes",
+    "halal": "Halal",
+    "glutenfrei": "Glutenfrei",
+    "filterTitle": "Angebot",
+    "filterHint": "Es werden nur Betriebe gezeigt, die alles Ausgewählte anbieten.",
+    "none": "Keine Angabe",
+    "editTitle": "Was bietet ihr an?",
+    "editHint": "Diese Angaben stehen ganz oben auf deiner Seite und in der Trefferliste."
+  },
+  "diet": {
+    "vegan": "Vegan",
+    "vegetarisch": "Vegetarisch",
+    "glutenfrei": "Glutenfrei"
+  },
+  "allergens": {
+    "label": "Allergene",
+    "short": "Allergene",
+    "hint": "Angaben nach Lebensmittelinformationsverordnung. Bei Unsicherheit bitte im Betrieb nachfragen.",
+    "none": "Keine Angabe",
+    "gluten": "Glutenhaltiges Getreide",
+    "krebstiere": "Krebstiere",
+    "ei": "Eier",
+    "fisch": "Fisch",
+    "erdnuss": "Erdnüsse",
+    "soja": "Soja",
+    "milch": "Milch",
+    "schalenfruechte": "Schalenfrüchte",
+    "sellerie": "Sellerie",
+    "senf": "Senf",
+    "sesam": "Sesam",
+    "sulfite": "Schwefeldioxid und Sulfite",
+    "lupine": "Lupinen",
+    "weichtiere": "Weichtiere"
+  },
+  "menu": {
+    "title": "Speisekarte",
+    "open": "Speisekarte ansehen",
+    "backToPlace": "Zur Seite von {{name}}",
+    "searchPlaceholder": "Gericht suchen",
+    "allCategories": "Alles",
+    "emptyTitle": "Noch keine Speisekarte",
+    "emptyText": "Dieser Betrieb hat noch keine Gerichte eingetragen.",
+    "emptySearch": "Kein Gericht passt zu „{{query}}“.",
+    "soldOut": "Heute nicht verfügbar",
+    "popular": "Beliebt",
+    "spicy": "Scharf",
+    "spicyLevel": "Schärfe {{level}} von 3",
+    "priceFrom": "ab {{price}}",
+    "itemCount": "{{count}} Gerichte",
+    "ratingCount": "{{count}} Bewertungen",
+    "legend": "Kennzeichnung",
+    "updatedHint": "Angaben ohne Gewähr. Maßgeblich ist die Karte vor Ort.",
+    "unconfirmed": "Diese Karte wurde von Gästen ergänzt und noch nicht vom Betrieb bestätigt.",
+    "confirmed": "Vom Betrieb gepflegt",
+    "print": "Drucken",
+    "share": "Karte teilen",
+    "jumpTo": "Springen zu",
+    "dishRating": "Bewertung der Gäste",
+    "noRating": "Noch nicht bewertet"
+  },
+  "review": {
+    "anonymous": "Gelöschtes Konto"
+  },
+  "reportReasons": {
+    "spam": "Spam oder Werbung",
+    "offensive": "Beleidigend",
+    "fake": "Gefälschte Bewertung",
+    "wrong_info": "Falsche Informationen",
+    "venue_closed": "Dauerhaft geschlossen",
+    "wrong_place": "Falscher Betrieb",
+    "other": "Sonstiges",
+    "hate": "Beleidigend",
+    "sexual": "Sexuelle Inhalte",
+    "violence": "Gewalt",
+    "copyright": "Urheberrecht",
+    "wrong": "Falsche Informationen"
   }
 }

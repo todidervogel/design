@@ -1,43 +1,96 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  BadgeCheck, Bookmark, Camera, ChevronRight, Ellipsis, Heart, Lock, MessageCircle,
-  Plus, Search, Share2, SlidersHorizontal, UtensilsCrossed,
+  BadgeCheck, Bookmark, Camera, ChevronDown, ChevronRight, ChevronUp, Ellipsis, Heart, Lock,
+  MessageCircle, Plus, Search, Share2, SlidersHorizontal, UtensilsCrossed,
 } from 'lucide-react'
 import {
   Avatar, Button, EmptyState, IconButton, Menu, MenuItem, MenuSeparator, OnSiteBadge,
-  RatingCompact, Skeleton, Switch, Thumb, useToast,
+  RatingCompact, ServingRow, Skeleton, Switch, useToast,
 } from '../../components/ui'
 import { FullscreenPage } from '../../components/layout'
 import { ReportContentDialog } from '../dialogs/ReportContentDialog'
-import { useDesignState } from '../../lib/design-state'
+import { useDesignState, useVariant } from '../../lib/design-state'
 import { useRequireLogin } from '../../lib/auth'
-import { places } from '../../mock/places'
-import { videos, users } from '../../mock/content'
-import { RADIUS_OPTIONS, DEFAULT_RADIUS, MVP_STAGE } from '../../config'
+import { useSession } from '../../lib/session'
+import { api, useQuery } from '../../lib/store'
+import { RADIUS_OPTIONS, MVP_STAGE } from '../../config'
 import { t } from '../../i18n'
 
 /** C.6 — Video-Feed */
 export default function Feed() {
-  const { isEmpty, isLoading } = useDesignState()
-  const [radius, setRadius] = useState(DEFAULT_RADIUS)
+  const { position, radiusKm, setRadiusKm } = useDesignState()
+  const { userId, loggedIn } = useSession()
   const [onlyRated, setOnlyRated] = useState(false)
+  const [index, setIndex] = useState(0)
   const [reportOpen, setReportOpen] = useState(false)
   const navigate = useNavigate()
   const toast = useToast()
   const requireLogin = useRequireLogin()
+  const wheelLock = useRef(0)
+  const touchStart = useRef(null)
 
-  const video = videos[0]
-  const author = users.find((u) => u.id === video.authorId)
-  const place = places.find((p) => p.id === video.placeId)
+  const { data, loading } = useVariant(
+    useQuery(() => api.videos.feed({ position, radiusKm, userId }), [position, radiusKm, userId], {
+      initial: { items: [], widened: false },
+    }),
+  )
+
+  const all = data?.items ?? []
+  const items = onlyRated ? all.filter((v) => v.review) : all
+  const video = items[Math.min(index, Math.max(items.length - 1, 0))]
   const commentsEnabled = MVP_STAGE >= 2
+
+  /* Bei Filterwechsel wieder oben anfangen. */
+  useEffect(() => { setIndex(0) }, [radiusKm, onlyRated])
+
+  /*
+   * Gesehenes merken — aber erst beim Weiterblättern, nicht beim Anzeigen.
+   * Sonst rutscht das Video, das man gerade ansieht, bei der nächsten
+   * Aktualisierung ans Ende der Liste und verschwindet unter den Fingern.
+   */
+  const seenRef = useRef(null)
+  seenRef.current = video?.id ?? null
+  useEffect(() => () => { if (seenRef.current) api.videos.markSeen(seenRef.current) }, [])
+
+  const go = (delta) => {
+    if (video) api.videos.markSeen(video.id)
+    setIndex((i) => Math.min(Math.max(i + delta, 0), Math.max(items.length - 1, 0)))
+  }
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); go(1) }
+      if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); go(-1) }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [items.length])
+
+  const onWheel = (e) => {
+    const now = Date.now()
+    if (now - wheelLock.current < 500 || Math.abs(e.deltaY) < 12) return
+    wheelLock.current = now
+    go(e.deltaY > 0 ? 1 : -1)
+  }
+
+  const onTouchStart = (e) => { touchStart.current = e.touches[0].clientY }
+  const onTouchEnd = (e) => {
+    if (touchStart.current == null) return
+    const delta = touchStart.current - e.changedTouches[0].clientY
+    touchStart.current = null
+    if (Math.abs(delta) > 60) go(delta > 0 ? 1 : -1)
+  }
+
+  const liked = video && loggedIn && api.social.isLiked(userId, video.id)
+  const saved = video && loggedIn && api.social.isSaved(userId, 'video', video.id)
+  const following = video?.author && loggedIn && api.social.followState(userId, video.author.id) !== 'none'
 
   return (
     <FullscreenPage title={t('bottomNav.feed')}>
-      <div className="feed">
+      <div className="feed" onWheel={onWheel} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="feed-video" aria-hidden="true" />
 
-        {/* Oben — Reiter und Werkzeuge */}
         <div className="feed-top">
           <span style={{ width: 40 }} />
           <div className="feed-tabs">
@@ -67,8 +120,8 @@ export default function Feed() {
                 <>
                   <p className="t-small c-on-dark-dim menu-title">{t('feed.settingsTitle')}</p>
                   {RADIUS_OPTIONS.map((r) => (
-                    <button key={r} type="button" className="menu-item c-on-dark" onClick={() => setRadius(r)}>
-                      {r} km {radius === r && <span className="c-accent">✓</span>}
+                    <button key={r} type="button" className="menu-item c-on-dark" onClick={() => setRadiusKm(r)}>
+                      {r} km {radiusKm === r && <span className="c-accent">✓</span>}
                     </button>
                   ))}
                   <MenuSeparator />
@@ -82,9 +135,9 @@ export default function Feed() {
           </div>
         </div>
 
-        {isLoading ? (
+        {loading ? (
           <FeedSkeleton />
-        ) : isEmpty ? (
+        ) : !video ? (
           <div className="feed-stage">
             <EmptyState
               onDark
@@ -92,43 +145,77 @@ export default function Feed() {
               title={t('feed.emptyTitle')}
               text={t('feed.emptyText')}
               action={<Button variant="primary" to="/karte">{t('feed.emptyCta')}</Button>}
-              secondaryAction={<Button variant="quiet" onClick={() => setRadius(25)}>{t('feed.emptyCtaSecondary')}</Button>}
+              secondaryAction={
+                radiusKm < 50
+                  ? <Button variant="quiet" style={{ color: '#fff' }} onClick={() => setRadiusKm(50)}>{t('feed.emptyCtaSecondary')}</Button>
+                  : undefined
+              }
             />
           </div>
         ) : (
           <>
-            {/* Rechte Spalte */}
+            {/* Blättern: wischen, Mausrad, Pfeiltasten — oder diese beiden Knöpfe */}
+            <div className="feed-paging">
+              <button type="button" onClick={() => go(-1)} disabled={index === 0} aria-label={t('common.back')}>
+                <ChevronUp size={20} />
+              </button>
+              <span className="t-tiny c-on-dark-dim">{t('feed.ofCount', { current: index + 1, total: items.length })}</span>
+              <button type="button" onClick={() => go(1)} disabled={index >= items.length - 1} aria-label={t('common.next')}>
+                <ChevronDown size={20} />
+              </button>
+            </div>
+
             <div className="feed-rail">
               <button
                 type="button"
                 className="feed-rail-item"
-                onClick={requireLogin(() => navigate(`/p/${author.username}`))}
+                onClick={requireLogin(() => api.social.toggleFollow(userId, video.author.id))}
                 aria-label={t('feed.follow')}
               >
                 <span className="feed-avatar-wrap">
-                  <Avatar name={author.username} size={44} />
-                  <span className="feed-follow-plus"><Plus size={12} /></span>
+                  <Avatar name={video.author?.username} size={44} />
+                  {!following && <span className="feed-follow-plus"><Plus size={12} /></span>}
                 </span>
               </button>
-              <button type="button" className="feed-rail-item" onClick={requireLogin(() => toast(t('toast.saved')))}>
-                <Heart size={28} />
-                <span className="count">{video.likes}</span>
+
+              <button
+                type="button"
+                className={`feed-rail-item ${liked ? 'is-active' : ''}`}
+                onClick={requireLogin(() => api.social.toggleLike(userId, video.id))}
+                aria-pressed={!!liked}
+                aria-label={t('feed.like')}
+              >
+                <Heart size={28} fill={liked ? 'currentColor' : 'none'} />
+                <span className="count">{video.likeCount}</span>
               </button>
+
               <button
                 type="button"
                 className="feed-rail-item"
                 style={commentsEnabled ? undefined : { opacity: 0.5 }}
                 aria-disabled={!commentsEnabled}
+                aria-label={t('feed.comment')}
               >
                 <MessageCircle size={28} />
-                {commentsEnabled && <span className="count">{video.comments}</span>}
               </button>
-              <button type="button" className="feed-rail-item" onClick={requireLogin(() => toast(t('toast.saved')))}>
-                <Bookmark size={28} />
+
+              <button
+                type="button"
+                className={`feed-rail-item ${saved ? 'is-active' : ''}`}
+                onClick={requireLogin(() => {
+                  const now = api.social.toggleSave(userId, 'video', video.id)
+                  toast(now ? t('toast.saved') : t('common.removed'))
+                })}
+                aria-pressed={!!saved}
+                aria-label={t('feed.save')}
+              >
+                <Bookmark size={28} fill={saved ? 'currentColor' : 'none'} />
               </button>
-              <button type="button" className="feed-rail-item" onClick={() => toast(t('toast.linkCopied'))}>
+
+              <button type="button" className="feed-rail-item" onClick={() => toast(t('toast.linkCopied'))} aria-label={t('feed.share')}>
                 <Share2 size={28} />
               </button>
+
               <Menu
                 align="right"
                 dark
@@ -140,7 +227,7 @@ export default function Feed() {
               >
                 {({ close }) => (
                   <>
-                    <MenuItem className="c-on-dark" onClick={close}>{t('feed.menu.notInterested')}</MenuItem>
+                    <MenuItem onClick={() => { close(); api.videos.markSeen(video.id); go(1) }}>{t('feed.menu.notInterested')}</MenuItem>
                     <MenuItem onClick={() => { close(); toast(t('toast.linkCopied')) }}>{t('feed.menu.copyLink')}</MenuItem>
                     <MenuItem onClick={() => { close(); setReportOpen(true) }}>{t('feed.menu.reportVideo')}</MenuItem>
                     <MenuItem danger onClick={close}>{t('feed.menu.blockAuthor')}</MenuItem>
@@ -151,11 +238,17 @@ export default function Feed() {
               </Menu>
             </div>
 
-            {/* Unten links */}
             <div className="feed-bottom">
               <div className="feed-caption-block stack-2">
                 <div className="row" style={{ gap: 'var(--sp-2)' }}>
-                  <span className="t-body-bold c-on-dark">@{author.username}</span>
+                  <button
+                    type="button"
+                    className="t-body-bold c-on-dark"
+                    style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
+                    onClick={() => navigate(`/p/${video.author.username}`)}
+                  >
+                    @{video.author?.username}
+                  </button>
                   {video.verifiedOnSite && <OnSiteBadge tone="dark" />}
                 </div>
                 <p className="t-body c-on-dark clamp-2">{video.caption}</p>
@@ -163,31 +256,39 @@ export default function Feed() {
                   type="button"
                   className="t-small c-on-dark-dim"
                   style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
+                  onClick={() => navigate(`/v/${video.id}`)}
                 >
                   {t('common.more')}
                 </button>
-                <RatingCompact rating={video.rating} onDark />
+                {video.review && (
+                  <RatingCompact
+                    rating={{ food: video.review.ratingFood, service: video.review.ratingService, price: video.review.ratingPrice }}
+                    onDark
+                  />
+                )}
               </div>
 
-              {/* Kaltstart-Hinweis */}
-              <div className="feed-coldstart">
-                <span className="grow">{t('feed.coldStart')}</span>
-                <Button variant="quiet" size="sm" to="/karte" style={{ color: '#fff' }}>{t('feed.coldStartCta')}</Button>
-              </div>
+              {/* Kaltstart: zu wenig in der Nähe (8.4) */}
+              {data?.widened && (
+                <div className="feed-coldstart">
+                  <span className="grow">{t('feed.coldStart')}</span>
+                  <Button variant="quiet" size="sm" to="/karte" style={{ color: '#fff' }}>{t('feed.coldStartCta')}</Button>
+                </div>
+              )}
 
-              {/* Restaurantleiste */}
-              <button type="button" className="feed-place-bar" onClick={() => navigate(`/g/${place.slug}`)}>
+              <button type="button" className="feed-place-bar" onClick={() => navigate(`/g/${video.place.slug}`)}>
                 <span className="thumb-placeholder" style={{ width: 40, height: 40, background: 'rgba(255,255,255,.16)', color: 'rgba(255,255,255,.6)' }}>
                   <UtensilsCrossed size={16} />
                 </span>
                 <span className="grow" style={{ textAlign: 'left' }}>
                   <span className="t-body-bold c-on-dark row" style={{ gap: 4 }}>
-                    {place.name}
-                    {place.verified && <BadgeCheck size={15} style={{ color: '#8FBBEE' }} />}
+                    {video.place.name}
+                    {video.place.verified && <BadgeCheck size={15} style={{ color: '#8FBBEE' }} />}
                   </span>
                   <span className="t-small c-on-dark-dim">
-                    {place.cuisine} · {place.distance} · {place.open ? t('common.openNow') : t('hours.closed')}
+                    {video.place.cuisine} · {video.place.distance} · {video.place.open ? t('common.openNow') : t('hours.closed')}
                   </span>
+                  <ServingRow serving={video.place.serving} size="sm" max={5} className="feed-serving" />
                 </span>
                 <ChevronRight size={20} />
               </button>
@@ -196,7 +297,11 @@ export default function Feed() {
         )}
       </div>
 
-      <ReportContentDialog open={reportOpen} onClose={() => setReportOpen(false)} />
+      <ReportContentDialog
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        target={video ? { type: 'video', id: video.id, label: `${video.id} · ${video.place?.name}` } : null}
+      />
     </FullscreenPage>
   )
 }
