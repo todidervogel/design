@@ -13,7 +13,7 @@ import { APP_NAME } from '../src/config'
 import { t } from '../src/i18n'
 
 /**
- * Die Galerie zeigt jeden Baustein einmal — in hell und dunkel, mit den
+ * Die Galerie zeigt jeden Baustein einmal, in hell und dunkel, mit den
  * Zuständen, die im Entwurf vorkommen. Sie gehört nicht zum Produkt; sie ist
  * dafür da, das Design-System anzusehen, ohne die ganze Anwendung zu starten.
  */
@@ -86,7 +86,7 @@ export default function Gallery() {
   return (
     <ToastProvider>
       <header className="gal-top">
-        <strong className="t-h3">{APP_NAME} — Design-System</strong>
+        <strong className="t-h3">{APP_NAME}, Design-System</strong>
         <span className="spacer" style={{ flex: 1 }} />
         <Button variant="secondary" size="sm" icon={dark ? Sun : Moon} onClick={() => setDark((d) => !d)}>
           {dark ? 'Hell' : 'Dunkel'}
@@ -120,7 +120,7 @@ function Farben() {
     <Abschnitt
       id="farben"
       titel="Farben"
-      hinweis="Alle Werte stehen in src/styles/tokens.css. In Komponenten wird nur über Variablen zugegriffen, nie über feste Werte — sonst zieht der Dunkelmodus nicht mit."
+      hinweis="Alle Werte stehen in src/styles/tokens.css. In Komponenten wird nur über Variablen zugegriffen, nie über feste Werte, sonst zieht der Dunkelmodus nicht mit."
     >
       <div className="gal-swatches">
         {FARBEN.map(([token, label]) => (
@@ -141,14 +141,14 @@ function Schrift() {
   return (
     <Abschnitt id="schrift" titel="Schrift" hinweis="Eine neutrale Schrift, klare Größenhierarchie. Nichts wird von außen nachgeladen.">
       <div className="gal-item">
-        <p className="t-display">Display — Überschrift der Startseite</p>
-        <p className="t-h1">H1 — Seitentitel</p>
-        <p className="t-h2">H2 — Abschnitt</p>
-        <p className="t-h3">H3 — Karte, Zeile</p>
-        <p className="t-body">Fließtext — Beschreibungen, Bewertungen, Hinweise.</p>
+        <p className="t-display">Display, Überschrift der Startseite</p>
+        <p className="t-h1">H1, Seitentitel</p>
+        <p className="t-h2">H2, Abschnitt</p>
+        <p className="t-h3">H3, Karte, Zeile</p>
+        <p className="t-body">Fließtext, Beschreibungen, Bewertungen, Hinweise.</p>
         <p className="t-body-bold">Fließtext betont</p>
-        <p className="t-small c-secondary">Klein und zweitrangig — Metazeilen, Hilfetexte.</p>
-        <p className="t-tiny c-tertiary">Winzig — Beschriftungen unter Symbolen.</p>
+        <p className="t-small c-secondary">Klein und zweitrangig, Metazeilen, Hilfetexte.</p>
+        <p className="t-tiny c-tertiary">Winzig, Beschriftungen unter Symbolen.</p>
       </div>
     </Abschnitt>
   )
@@ -296,7 +296,7 @@ function Anzeigen() {
 
         <Item titel="Aufklappen">
           <Accordion items={[
-            { q: 'Wie lade ich ein Video hoch?', a: 'Über das Plus in der unteren Leiste — nur in der App.' },
+            { q: 'Wie lade ich ein Video hoch?', a: 'Über das Plus in der unteren Leiste, nur in der App.' },
             { q: 'Was kostet das?', a: 'Nichts.' },
           ]} />
         </Item>
@@ -322,7 +322,7 @@ function Sterne() {
     <Abschnitt
       id="sterne"
       titel="Sterne"
-      hinweis="Essen, Service und Preis stehen immer getrennt und werden nie zu einer Zahl zusammengefasst — das ist der Unterschied zu Google. Mittelwerte mit einer Nachkommastelle, Einzelbewertungen als ganze Zahl."
+      hinweis="Essen, Service und Preis stehen immer getrennt und werden nie zu einer Zahl zusammengefasst, das ist der Unterschied zu Google. Mittelwerte mit einer Nachkommastelle, Einzelbewertungen als ganze Zahl."
     >
       <div className="gal-grid">
         <Item titel="Nur Sterne">
@@ -350,13 +350,13 @@ function Angebot() {
     <Abschnitt
       id="angebot"
       titel="Angebot"
-      hinweis="Was gibt es hier zu essen und zu trinken? Als Symbolzeile, nicht als Fließtext — damit man es sieht, bevor man liest. Ein Betrieb mit ausschließlich Getränken bekommt ein eigenes, deutliches Etikett."
+      hinweis="Was gibt es hier zu essen und zu trinken? Als Symbolzeile, nicht als Fließtext, damit man es sieht, bevor man liest. Ein Betrieb mit ausschließlich Getränken bekommt ein eigenes, deutliches Etikett."
     >
       <div className="gal-grid">
-        <Item titel="Klein — Trefferliste">
+        <Item titel="Klein, Trefferliste">
           <ServingRow serving={['fleisch', 'fisch', 'vegetarisch', 'suess']} size="sm" />
         </Item>
-        <Item titel="Groß — Gastro-Seite">
+        <Item titel="Groß, Gastro-Seite">
           <ServingRow serving={['vegan', 'vegetarisch', 'glutenfrei', 'fruehstueck']} size="md" />
         </Item>
         <Item titel="Nur Getränke">
@@ -416,7 +416,7 @@ function Laden() {
     <Abschnitt
       id="laden"
       titel="Laden und Leere"
-      hinweis="Skelettflächen zuerst — sie zeigen, wie die Seite gleich aussieht. Der Kreisel bleibt den Fällen vorbehalten, in denen es nichts zu skizzieren gibt."
+      hinweis="Skelettflächen zuerst, sie zeigen, wie die Seite gleich aussieht. Der Kreisel bleibt den Fällen vorbehalten, in denen es nichts zu skizzieren gibt."
     >
       <div className="gal-grid">
         <Item titel="Skelett">

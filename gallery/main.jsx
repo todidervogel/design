@@ -11,7 +11,7 @@ import './gallery.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {/* Einige Bausteine enthalten Links — deshalb ein Router drumherum. */}
+    {/* Einige Bausteine enthalten Links, deshalb ein Router drumherum. */}
     <BrowserRouter>
       <Gallery />
     </BrowserRouter>

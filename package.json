@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Design-System: Farben, Schrift, Bausteine, Texte — plus eine Galerie zum Ansehen",
+  "description": "Design-System: Farben, Schrift, Bausteine, Texte, plus eine Galerie zum Ansehen",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
